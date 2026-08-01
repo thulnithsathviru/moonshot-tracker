@@ -1,90 +1,94 @@
 # Moonshot Programme Tracker
 
-Browser-based tool for the Moonshot retail refit programme: milestone plan, work calendar, and
-editable critical paths for every outlet. One HTML file, no build step, no server.
+A single-file tracker for the Moonshot refit programme: milestone matrix, outlet calendar,
+and editable critical paths — built from the critical-path workbook and shareable as a plain
+web page. No build step, no server code: `index.html` + `data.json` is the whole app.
 
-## The three views
+## The three files
 
-**Milestone Plan** — outlets down the side, milestone categories across the top. Each cell shows the
-milestones flagged in that category with their dates, and the last column carries the handover date.
-Toggle categories on and off to keep the table to what a given audience needs.
+| File | What it is |
+|---|---|
+| `index.html` | The entire app (open it anywhere, host it on GitHub Pages) |
+| `data.json` | The published dataset — outlets, tasks, categories, programme calendar |
+| `README.md` | This file |
 
-**Calendar** — day, week, and month. By default each entry is one outlet + one category with a count,
-rather than every task listed separately, so a busy day reads as `Kandy 2 · Back Wall Work (7)` instead
-of seven lines. Switch to *Every task listed* when you want the detail. Filter by outlet and by
-category; click any day to drill in.
+## Where the data comes from (priority order)
 
-**Critical Path** — the Gantt, per outlet, fully editable:
+1. **Supabase** — if connected, the cloud copy wins. Every device sees the same data.
+2. **Local draft** — unsaved/offline edits kept in the browser.
+3. **`data.json`** — the published file sitting next to `index.html`.
+4. **Baked-in copy** — a snapshot inside `index.html`, so the file works even alone.
 
-- add, edit, duplicate, reorder, and delete tasks;
-- pick start and end dates from a date picker;
-- click a date header to mark a holiday or non-working day, choose its type and colour, and apply it
-  either programme-wide or to that outlet alone;
-- click a cell to extend a bar, or to knock a single day out of a task without moving its dates.
+## Cloud sync with Supabase (recommended)
 
-Working-day counts recalculate the moment a holiday changes. That is the fix for bars that used to go
-stale when the dates moved in Excel.
+One free Supabase project makes every device read and write the same dataset — no more
+downloading and committing `data.json` to move edits between the laptop and the phone.
 
-## Non-working days
+1. Create a free account at **supabase.com** → **New project** (any name/region; note the database password it asks you to set, though the tracker never uses it).
+2. In the project, open **SQL Editor** → **New query**, paste and **Run**:
 
-A day type carries a colour and one decision: does work continue on it. Poya Day, Public Holiday, Stock
-Count Programme, and No Work Day ship as non-working; add your own under **Categories & Holidays**.
-Days marked there apply to every outlet; a day marked from a Gantt header can be scoped to one outlet
-and overrides the programme calendar for it.
+```sql
+create table tracker_state (
+  id int primary key,
+  data jsonb,
+  updated_at timestamptz
+);
+alter table tracker_state enable row level security;
+create policy "team access" on tracker_state
+  for all to anon using (true) with check (true);
+```
 
-## Categories
+3. Go to **Settings → API** and copy two things: the **Project URL**
+   (`https://xxxx.supabase.co`) and the **anon public** key.
+4. Open the tracker → **Data** tab → paste both → **Connect & load**.
+   The cloud is empty at first, so let it **push** the current dataset up.
+5. Repeat step 4 on every device (phone included). From then on **Save** writes to the
+   cloud and opening the page loads from it.
 
-Tasks are grouped into work packages — Back Wall Work, Juice & Bakery Fit-out, Merchandising, Kitchen
-Works and so on. Each category has a colour and two switches: show it on the Milestone Plan, show it in
-the Calendar. Add, rename, recolour, and delete categories freely; deleting one moves its tasks to
-*Other* rather than losing them.
+**Sharing note:** the anon key + URL together grant edit access to the tracker's data.
+Share them only with the team — don't paste them into the public repo. They live in each
+browser's local storage, never inside `data.json`.
 
-A milestone is any task you have flagged with the ◆ button. It shows on the Milestone Plan under
-whichever category the task belongs to.
+## Publishing without Supabase
 
-## Getting one dataset onto every device
+Edit → **Save** → **Download data.json** → replace the file in the repo → commit.
+Everyone gets the new data on refresh. (The repo holds live handover dates — a private
+repo is strongly recommended.)
 
-Edits are held in the browser they were made in. To publish a set that all devices see:
+## How the pieces work
 
-1. Edit on the PC.
-2. **Data → Download data.json**.
-3. Commit that file into this repo next to `index.html`.
+**Milestones.** The matrix is the slide layout: work packages as numbered rows, outlets as
+coloured columns. Each cell is the **combined range of every milestone-flagged task** in
+that category — e.g. all the flagged Back Wall tasks from 27 Jul to 10 Aug show as
+"27 Jul – 10 Aug". Flag tasks with ◆ on the Critical Path, or press **Edit cells** and pick
+the tasks per cell. The Launch row is set by hand (click a cell). **Strike past** crosses
+out finished milestones. PNG/PDF export from the toolbar.
 
-Every device that opens the Pages link then loads `data.json` automatically — no upload, no re-entry.
-The file also carries a baked-in copy of the data, so it still works opened straight off disk with no
-network. If the published file moves ahead of a device's local draft, that device says so and offers
-both options rather than silently picking one.
+**Calendar.** Month, week and day views of every outlet at once, chips coloured per outlet.
+Grouped mode collapses each outlet's category into one chip with a task count — but tasks
+that don't belong to a category (Other) always show individually by name. Click any chip
+for the full day breakdown.
 
-## Importing a workbook
+**Critical Path.** The workbook view, editable. Click a task's ✎ to edit dates, people,
+category, progress; click a cell inside a bar to knock a day out or put it back; click a
+cell beyond the bar to extend it. ◆ toggles the milestone flag.
 
-**Import Excel** reads a critical-path workbook, one sheet per outlet. It looks for a row of dates
-across the top, columns headed Description / Responsibility / Completed Level / Department, a `1` in a
-date column to draw the bar, and a merged vertical block of text (`POYA DAY` and the like) to mark a
-non-working day.
+**Holidays are programme-wide.** Click a date header to mark a day: it lands on the shared
+calendar, so every outlet pauses there and all bars recalculate. If one outlet genuinely
+works that day, tick **"works on this day anyway"** in the same dialog — the exception
+applies only to that outlet, and the chart shows a faint curtain behind its bars. Fully
+blocked days show the solid curtain with the vertical label, exactly like the Excel sheets.
 
-Categories are assigned from the task wording and the obvious milestones are flagged, as a starting
-point only. Re-importing an updated workbook keeps your category and milestone choices for any task
-whose name has not changed, so tidying up is a one-off.
+**Setup.** Rename/recolour categories, day types, outlets; the whole programme calendar in
+one table, with each date's per-outlet exceptions listed.
 
-Where a task bar breaks for no marked reason, the tool flags those dates and offers to add them as
-non-working days across the programme.
+**Import.** Drop the critical-paths workbook in any time. Sheets become outlets; holiday
+text blocks land on the shared calendar; where a sheet shows work on a marked day, that
+outlet gets the works-anyway exception automatically. Re-importing keeps your category and
+milestone choices for any task whose name hasn't changed.
 
-## Tech
+## Hosting
 
-Plain HTML, CSS, and JavaScript in a single file. Loaded from public CDNs:
-
-- [SheetJS (xlsx)](https://sheetjs.com/) — reading Excel workbooks
-- [html2canvas](https://html2canvas.hertzen.com/) — rendering views to images
-- [jsPDF](https://github.com/parallax/jsPDF) — PDF export
-
-Everything runs locally in the browser. Nothing is uploaded anywhere.
-
-## Note on the repository
-
-`data.json` contains live outlet dates. Keep the repository private, or strip the file before making it
-public.
-
----
-
-*Built during a project internship at Jaykay Marketing Services (John Keells Holdings), Project &
-Properties Division.*
+GitHub Pages: put the three files in a repo → Settings → Pages → deploy from branch.
+Works equally from any static host or a shared drive (opened from disk, the page uses its
+baked-in data plus your local draft; connect Supabase and even that limitation disappears).

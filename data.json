@@ -1,5 +1,5 @@
 {
- "version": 2,
+ "version": 3,
  "generatedAt": "2026-07-31",
  "source": "Critical_Paths.xlsx",
  "dayTypes": [
@@ -43,84 +43,84 @@
   {
    "id": "prep",
    "name": "Preparation & Temporary Setup",
-   "color": "#7c8798",
+   "color": "#8E8E93",
+   "inMilestones": false,
+   "inCalendar": true
+  },
+  {
+   "id": "backwall",
+   "name": "Back Wall Work",
+   "color": "#0071E3",
    "inMilestones": true,
    "inCalendar": true
   },
   {
    "id": "merchandising",
    "name": "Merchandising",
-   "color": "#0f8a70",
-   "inMilestones": true,
-   "inCalendar": true
-  },
-  {
-   "id": "cookedsweet",
-   "name": "Cooked Sweet Fit-out",
-   "color": "#c2571a",
+   "color": "#34C759",
    "inMilestones": true,
    "inCalendar": true
   },
   {
    "id": "juicebakery",
    "name": "Juice & Bakery Fit-out",
-   "color": "#b8860b",
+   "color": "#F59E0B",
+   "inMilestones": true,
+   "inCalendar": true
+  },
+  {
+   "id": "cookedsweet",
+   "name": "Cooked Sweet Fit-out",
+   "color": "#FF9500",
    "inMilestones": true,
    "inCalendar": true
   },
   {
    "id": "kitchen",
    "name": "Kitchen Works",
-   "color": "#8a2f4a",
-   "inMilestones": true,
-   "inCalendar": true
-  },
-  {
-   "id": "backwall",
-   "name": "Back Wall Work",
-   "color": "#1f5fa8",
+   "color": "#FF2D55",
    "inMilestones": true,
    "inCalendar": true
   },
   {
    "id": "fresh",
    "name": "Fresh Area",
-   "color": "#4a8a1f",
+   "color": "#00897B",
    "inMilestones": true,
    "inCalendar": true
   },
   {
    "id": "relocation",
    "name": "Equipment Relocation",
-   "color": "#6b4fa8",
-   "inMilestones": true,
-   "inCalendar": true
-  },
-  {
-   "id": "handover",
-   "name": "Handover & Closeout",
-   "color": "#0d6d6d",
+   "color": "#AF52DE",
    "inMilestones": true,
    "inCalendar": true
   },
   {
    "id": "civil",
    "name": "Civil, Tiling & Finishes",
-   "color": "#8a6d3b",
+   "color": "#A2845E",
    "inMilestones": false,
    "inCalendar": true
   },
   {
    "id": "mep",
    "name": "MEP & Services",
-   "color": "#2f6f8f",
+   "color": "#5856D6",
    "inMilestones": false,
+   "inCalendar": true
+  },
+  {
+   "id": "handover",
+   "name": "Handover & Closeout",
+   "color": "#1D1D1F",
+   "inMilestones": true,
    "inCalendar": true
   },
   {
    "id": "other",
    "name": "Other",
-   "color": "#6b7280",
+   "color": "#C7A500",
    "inMilestones": false,
    "inCalendar": true
   }
@@ -230,9 +230,11 @@
   {
    "id": "thalahena",
    "name": "Thalahena",
+   "color": "#0071E3",
    "start": "2026-06-08",
    "end": "2026-06-10",
-   "holidays": [],
+   "worksOn": [],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -335,9 +337,11 @@
   {
    "id": "attidiya-2",
    "name": "Attidiya 2",
+   "color": "#34C759",
    "start": "2026-06-05",
    "end": "2026-06-14",
-   "holidays": [],
+   "worksOn": [],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -560,9 +564,11 @@
   {
    "id": "gamsabha",
    "name": "Gamsabha",
+   "color": "#FF9500",
    "start": "2026-06-03",
    "end": "2026-06-22",
-   "holidays": [],
+   "worksOn": [],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -749,9 +755,13 @@
   {
    "id": "duplication",
    "name": "Duplication",
+   "color": "#AF52DE",
    "start": "2026-06-14",
    "end": "2026-06-29",
-   "holidays": [],
+   "worksOn": [
+    "2026-06-29"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -1010,9 +1020,13 @@
   {
    "id": "darley-rd",
    "name": "Darley Rd",
+   "color": "#FF2D55",
    "start": "2026-06-17",
    "end": "2026-06-29",
-   "holidays": [],
+   "worksOn": [
+    "2026-06-29"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -1283,9 +1297,13 @@
   {
    "id": "katubedda",
    "name": "Katubedda",
+   "color": "#E91E8C",
    "start": "2026-06-18",
    "end": "2026-06-29",
-   "holidays": [],
+   "worksOn": [
+    "2026-06-29"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -1484,9 +1502,13 @@
   {
    "id": "kalubowila",
    "name": "Kalubowila",
+   "color": "#00897B",
    "start": "2026-06-10",
    "end": "2026-06-30",
-   "holidays": [],
+   "worksOn": [
+    "2026-06-29"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -1781,9 +1803,13 @@
   {
    "id": "eldeniya",
    "name": "Eldeniya",
+   "color": "#F59E0B",
    "start": "2026-06-14",
    "end": "2026-07-31",
-   "holidays": [],
+   "worksOn": [
+    "2026-07-29"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -2150,9 +2176,11 @@
   {
    "id": "wattala-2",
    "name": "Wattala 2",
+   "color": "#A2845E",
    "start": "2026-07-01",
    "end": "2026-07-17",
-   "holidays": [],
+   "worksOn": [],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -2423,9 +2451,13 @@
   {
    "id": "mawaramandiya",
    "name": "Mawaramandiya",
+   "color": "#7B1FA2",
    "start": "2026-06-17",
    "end": "2026-07-29",
-   "holidays": [],
+   "worksOn": [
+    "2026-07-29"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -2786,9 +2818,11 @@
   {
    "id": "gampaha-2",
    "name": "Gampaha 2",
+   "color": "#C7A500",
    "start": "2026-06-23",
    "end": "2026-08-03",
-   "holidays": [],
+   "worksOn": [],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -3242,9 +3276,14 @@
   {
    "id": "battaramulla",
    "name": "Battaramulla",
+   "color": "#8E8E93",
    "start": "2026-06-23",
    "end": "2026-08-14",
-   "holidays": [],
+   "worksOn": [
+    "2026-07-29",
+    "2026-08-11"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -3790,9 +3829,14 @@
   {
    "id": "kegalle",
    "name": "Kegalle",
+   "color": "#0071E3",
    "start": "2026-07-07",
    "end": "2026-08-25",
-   "holidays": [],
+   "worksOn": [
+    "2026-07-29",
+    "2026-08-11"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -4273,9 +4317,13 @@
   {
    "id": "ambalangoda",
    "name": "Ambalangoda",
+   "color": "#34C759",
    "start": "2026-07-09",
    "end": "2026-08-25",
-   "holidays": [],
+   "worksOn": [
+    "2026-08-11"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -4714,9 +4762,13 @@
   {
    "id": "panadura-2",
    "name": "Panadura 2",
+   "color": "#FF9500",
    "start": "2026-07-01",
    "end": "2026-08-26",
-   "holidays": [],
+   "worksOn": [
+    "2026-08-26"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -5263,9 +5315,14 @@
   {
    "id": "mathara-03",
    "name": "Mathara 03",
+   "color": "#AF52DE",
    "start": "2026-07-07",
    "end": "2026-08-27",
-   "holidays": [],
+   "worksOn": [
+    "2026-08-26",
+    "2026-08-27"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -5752,9 +5809,13 @@
   {
    "id": "miriswatte",
    "name": "Miriswatte",
+   "color": "#FF2D55",
    "start": "2026-07-27",
    "end": "2026-09-09",
-   "holidays": [],
+   "worksOn": [
+    "2026-08-11"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -6241,9 +6302,13 @@
   {
    "id": "kaluthara-1",
    "name": "Kaluthara 1",
+   "color": "#E91E8C",
    "start": "2026-07-26",
    "end": "2026-09-18",
-   "holidays": [],
+   "worksOn": [
+    "2026-08-11"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -6658,9 +6723,14 @@
   {
    "id": "anuradhapura",
    "name": "Anuradhapura",
+   "color": "#00897B",
    "start": "2026-07-25",
    "end": "2026-10-16",
-   "holidays": [],
+   "worksOn": [
+    "2026-07-29",
+    "2026-08-11"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
@@ -7371,9 +7441,15 @@
   {
    "id": "kandy-2",
    "name": "Kandy 2",
+   "color": "#F59E0B",
    "start": "2026-07-26",
    "end": "2026-09-07",
-   "holidays": [],
+   "worksOn": [
+    "2026-08-11",
+    "2026-08-26",
+    "2026-09-07"
+   ],
+   "launch": null,
    "tasks": [
     {
      "id": "t1",
