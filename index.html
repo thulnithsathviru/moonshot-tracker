@@ -573,7 +573,14 @@ function normalise(){
   });
   applyTaskMap();
   DB.dayTypes.forEach(t=>{delete t.working; if(t.name==='Note (work continues)')t.name='Note';});
-  DB.holidays.forEach(h=>{ if(h.typeId&&!DB.dayTypes.some(t=>t.id===h.typeId))h.typeId=null; });
+  // days whose type was deleted by an older build: give them a real type so they
+  // stay visible (and removable) in Setup rather than lingering invisibly
+  const lost=DB.holidays.filter(h=>!h.typeId||!DB.dayTypes.some(t=>t.id===h.typeId));
+  if(lost.length){
+    let rec=DB.dayTypes.find(t=>t.id==='recovered');
+    if(!rec){ rec={id:'recovered',name:'Unsorted',color:'#8E8E93',text:'#ffffff'}; DB.dayTypes.push(rec); }
+    lost.forEach(h=>{ h.typeId='recovered'; h.label='UNSORTED'; });
+  }
   DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
@@ -1076,9 +1083,8 @@ function editHoliday(outId,date){
       <button class="x" onclick="closeModal()">✕</button></div>
     <div class="mod-b">
       <div class="grid2">
-        <div class="fld"><label>Day type <span style="text-transform:none;letter-spacing:0;font-weight:450">(optional)</span></label><select id="h_type">
-          <option value="" ${cur&&!cur.typeId?'selected':''}>— No type —</option>
-          ${DB.dayTypes.map(dt=>`<option value="${dt.id}" ${cur&&cur.typeId===dt.id?'selected':''}>${esc(dt.name)}</option>`).join('')}</select></div>
+        <div class="fld"><label>Day type</label><select id="h_type">
+          ${DB.dayTypes.map(dt=>`<option value="${dt.id}" ${cur&&cur.typeId===dt.id?'selected':''}>${esc(dt.name||'(no label)')}</option>`).join('')}</select></div>
         <div class="fld"><label>Until (optional, for multi-day)</label>
           <input type="date" id="h_until" value="" min="${date}"></div>
       </div>
@@ -1093,8 +1099,9 @@ function editHoliday(outId,date){
     </div></div>`);
 
   document.getElementById('h_save').onclick=()=>{
-    const typeId=document.getElementById('h_type').value||null;
-    const label=typeId?dayType(typeId).name.toUpperCase():'';
+    const typeId=document.getElementById('h_type').value;
+    const nm=dayType(typeId).name;
+    const label=nm?nm.toUpperCase():'';
     const until=document.getElementById('h_until').value;
     const dates=until&&until>date?range(date,until):[date];
     const w=document.getElementById('h_works')?.checked;
@@ -1250,21 +1257,6 @@ function viewManage(){
       <div class="ometa">${o.tasks.length} tasks · ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}${w?'<br>works through '+w+' special day'+(w===1?'':'s'):''}</div>
     </div>`;}).join('');
 
-  const allHols=[...DB.holidays].sort((a,b)=>a.date.localeCompare(b.date));
-  const holRows=allHols.map(x=>{
-    const dt=dayType(x.typeId);
-    const works=DB.outlets.filter(o=>(o.worksOn||[]).includes(x.date));
-    return `<tr>
-      <td class="mono" style="white-space:nowrap">${fmtY(x.date)}<div class="tmeta">${DOW[dowOf(x.date)]}</div></td>
-      <td><select data-hset="${x.date}" style="min-width:180px">
-        <option value="" ${!x.typeId?'selected':''}>— No type —</option>
-        ${DB.dayTypes.map(t=>`<option value="${t.id}" ${t.id===x.typeId?'selected':''}>${esc(t.name||'(no label)')}</option>`).join('')}
-      </select></td>
-      <td><span class="fchip on" style="color:${dt.color}"><i></i>${esc(dt.name||'No type')}</span></td>
-      <td style="font-size:11.5px;color:var(--ink-2)">${works.length?works.map(o=>esc(o.name)).join(', '):'—'}</td>
-      <td><button class="ibtn del" data-htdel="${x.date}" title="Remove">✕</button></td>
-    </tr>`;}).join('');
-
   return `
   <div class="card">
     <div class="card-h"><h2>Categories</h2>
@@ -1290,13 +1282,6 @@ function viewManage(){
     <div class="scroll"><table class="tbl"><thead><tr>
       <th></th><th>Type</th><th>Days</th><th></th></tr></thead>
       <tbody>${dtRows}</tbody></table></div>
-  </div>
-
-  <div class="card">
-    <div class="card-h"><h2>Marked days</h2><span class="sub">${allHols.length}</span></div>
-    <div class="scroll" style="max-height:400px"><table class="tbl"><thead><tr>
-      <th>Date</th><th>Type</th><th>Shown as</th><th>Works through</th><th></th></tr></thead>
-      <tbody>${holRows||'<tr><td colspan="5" class="hint" style="padding:14px">No days marked.</td></tr>'}</tbody></table></div>
   </div>
 
   <div class="card">
@@ -1813,10 +1798,6 @@ function wire(){
     DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
     markDirty(); render();
   });
-  document.querySelectorAll('[data-hset]').forEach(s=>s.onchange=()=>{
-    const x=holidayOn(s.dataset.hset);
-    if(x){ x.typeId=s.value||null; x.label=x.typeId?dayType(x.typeId).name.toUpperCase():''; markDirty(); render(); }
-  });
   document.querySelectorAll('[data-htdel]').forEach(b=>b.onclick=()=>{
     const d=b.dataset.htdel;
     DB.holidays=DB.holidays.filter(h=>h.date!==d);
@@ -1834,24 +1815,28 @@ function wire(){
   document.querySelectorAll('[data-dcol]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dcol).color=i.value;markDirty();render();});
   document.querySelectorAll('[data-dname]').forEach(i=>i.onchange=()=>{const d=dayType(i.dataset.dname);if(d.id){d.name=i.value.trim();markDirty();render();}});
   document.querySelectorAll('[data-ddel]').forEach(b=>b.onclick=async()=>{
-    const d=dayType(b.dataset.ddel);
+    const d=dayType(b.dataset.ddel); if(!d.id)return;
     const used=DB.holidays.filter(h=>h.typeId===d.id);
-    if(used.length){
-      const drop=await uiConfirm(
-        `<b>${used.length} marked day${used.length===1?'':'s'}</b> use “${esc(d.name||'(no label)')}”.<br><br>Remove those days from the calendar too, or keep them marked with no type?`,
-        {title:'Delete day type',ok:'Remove the days',cancel:'Keep them, no type'});
-      if(drop){
-        const dates=new Set(used.map(h=>h.date));
-        DB.holidays=DB.holidays.filter(h=>!dates.has(h.date));
-        DB.outlets.forEach(o=>o.worksOn=(o.worksOn||[]).filter(x=>!dates.has(x)));
-      }else{
-        used.forEach(h=>{h.typeId=null;h.label='';});
-      }
-    }
+    const msg=used.length
+      ? `Delete <b>${esc(d.name||'(no label)')}</b> and the ${used.length} day${used.length===1?'':'s'} marked with it? Every outlet's chart will recalculate.`
+      : `Delete <b>${esc(d.name||'(no label)')}</b>?`;
+    if(!await uiConfirm(msg,{title:'Delete day type',ok:'Delete',danger:true}))return;
+    const dates=new Set(used.map(h=>h.date));
+    DB.holidays=DB.holidays.filter(h=>h.typeId!==d.id);
+    DB.outlets.forEach(o=>o.worksOn=(o.worksOn||[]).filter(x=>!dates.has(x)));
     DB.dayTypes=DB.dayTypes.filter(x=>x.id!==d.id);
     markDirty(); render();
   });
 
+  on('dtAdd',async()=>{
+    const name=await uiPrompt('Leave the name empty for a day type that blocks work without showing a label.',
+      {title:'Add day type',placeholder:'e.g. Stock Count',ok:'Add',allowEmpty:true});
+    if(name===null)return;
+    DB.dayTypes.push({id:uid('d'),name:name||'',color:'#607D8B',text:'#ffffff'});
+    markDirty(); render();
+  });
+  document.querySelectorAll('[data-dcol]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dcol).color=i.value;markDirty();render();});
+  document.querySelectorAll('[data-dname]').forEach(i=>i.onchange=()=>{const d=dayType(i.dataset.dname);if(d.id){d.name=i.value.trim();markDirty();render();}});
   document.querySelectorAll('[data-ocol]').forEach(i=>i.onchange=()=>{
     const o=outletOf(i.dataset.ocol); if(o){o.color=i.value;markDirty();render();}
   });
