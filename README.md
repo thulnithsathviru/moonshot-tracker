@@ -75,6 +75,8 @@ sign up" toggle is irrelevant here since nobody signs in — leave it off.)
 - **Everything autosaves.** Edit anywhere and the change publishes to the database within a
   second or two — the status bar shows "Saving…" then "All changes saved". There is no
   Save button.
+- **View choices are remembered** — outlet selections and the chosen critical path
+  persist on each device across reloads.
 - **Categories are managed once, centrally** (Setup → Task categorisation). Every unique
   task name across all outlets is listed there; pick its category and every outlet updates,
   and future imports of the same task name land in the right category automatically.
@@ -82,18 +84,20 @@ sign up" toggle is irrelevant here since nobody signs in — leave it off.)
   the Milestones page) and it becomes a row of the matrix; each cell spans from the first
   to the last day of that category's tasks for the outlet. No per-task flags.
 - **Special days** are marked per type in Setup — add one day or a from–to range and every
-  outlet's chart recalculates. Clicking a date header on a Critical Path does the same
-  thing, and is also where an outlet gets its **works-anyway** exception.
-- **The Edit switch (top bar) guards all editing.** Off, the tracker is view-only: chart
-  clicks won't disturb tasks, and clicking anywhere in a chart column opens the special-day
-  editor for that date instead. On, the frozen columns become editable and chart clicks
-  pick the exact days a task runs — start and end set themselves, and gaps between picked
-  days are simply days the work doesn't carry.
-- **Export** (top bar) renders the current page — the complete table, including everything
-  scrolled out of view — as a PNG or PDF.
-- **Backup** (Setup page) downloads a full safety copy, exports every critical path as an
-  Excel workbook (one sheet per outlet, in the same shape the importer reads), and can
-  restore from a backup file — restoring replaces the live data.
+  outlet's chart recalculates. The chart label always shows the day type's name, so
+  renaming a type updates every chart instantly.
+- **The Edit switch (top bar) guards all editing.** Off, the tracker is fully view-only —
+  chart clicks do nothing. On, the frozen columns become editable and chart clicks pick
+  the exact days a task runs — start and end set themselves, and gaps between picked days
+  are simply days the work doesn't carry. In Edit mode, clicking a special-day column
+  adjusts that day (type, range, works-anyway); otherwise special days are managed in Setup.
+- **Export** (top bar) opens a dialog to pick the type (PNG, PDF, or — on a Critical
+  Path — a styled Excel of the current outlet) and the size, then renders the complete
+  table including everything scrolled out of view.
+- **Backup** (Setup page) downloads a full safety copy, exports every critical path as a
+  colour-styled Excel workbook (one sheet per outlet, category-coloured bars, tinted
+  special-day columns with rotated labels), and can restore from a backup file — restoring
+  replaces the live data.
 
 ### Who can access — read this once
 
