@@ -313,8 +313,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
    ============================================================ */
 
 const LS  = 'moonshot.tracker.v3';
-const LSB = 'moonshot.supabase';      // {url, key} — kept out of the dataset
-let DB=null, PUB=null, dirty=false, cloud={on:false, state:'off', at:null};
+let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
 let UI={ view:'milestones', outlet:null, calMode:'month', calDate:null,
          outlets:null, group:true, msEdit:false };
 
@@ -399,43 +398,44 @@ function saveLocal(silent){
   try{
     localStorage.setItem(LS,JSON.stringify({savedAt:new Date().toISOString(),base:PUB?PUB.generatedAt:null,data:DB}));
     dirty=false;
-    if(!silent) toast(cloud.on?'Saved on this device — pushing to cloud…':'Saved to this device');
+    if(!silent) toast('Saved on this device — publishing to cloud…');
     renderSync();
   }catch(e){ toast('Could not save: '+e.message); }
 }
 function readLocal(){ try{const r=localStorage.getItem(LS);return r?JSON.parse(r):null;}catch(e){return null;} }
 function markDirty(){ dirty=true; renderSync(); }
 
-/* ---------- Supabase (plain REST, no SDK) ---------- */
-function sbCfg(){ try{return JSON.parse(localStorage.getItem(LSB)||'null');}catch(e){return null;} }
-function sbHeaders(cfg){ return {'apikey':cfg.key,'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'}; }
+/* ---------- Supabase (baked-in project · open access · no login) ----------
+   The URL and key below identify the project and are meant to live in frontend
+   code — they are not secrets. They grant exactly what the database's Row Level
+   Security policy allows, which for this project is: anyone with the link may
+   read and write the one shared row. No sign-in, nothing to configure. */
+const SB_URL='https://aopjjoxofnqhfowacvrt.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvcGpqb3hvZm5xaGZvd2FjdnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODgwMTAsImV4cCI6MjEwMTE2NDAxMH0.drU8-8_H6SNNogxq6xKnUXVmUpchBi1ggpqwlQcB8x0';
+function sbHeaders(){return {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};}
 async function sbLoad(){
-  const cfg=sbCfg(); if(!cfg) return null;
-  const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/tracker_state?id=eq.1&select=data,updated_at',
-    {headers:sbHeaders(cfg)});
-  if(!r.ok) throw new Error('Supabase read failed ('+r.status+')');
+  const r=await fetch(SB_URL+'/rest/v1/tracker_state?id=eq.1&select=data,updated_at',{headers:sbHeaders(),cache:'no-store'});
+  if(!r.ok) throw new Error('read failed ('+r.status+')');
   const rows=await r.json();
   return rows.length?rows[0]:null;
 }
 async function sbSave(){
-  const cfg=sbCfg(); if(!cfg) return false;
   const out={...DB}; delete out._localAt; delete out._stale;
   out.generatedAt=today();
-  const r=await fetch(cfg.url.replace(/\/$/,'')+'/rest/v1/tracker_state',
+  const r=await fetch(SB_URL+'/rest/v1/tracker_state',
     {method:'POST',
-     headers:{...sbHeaders(cfg),'Prefer':'resolution=merge-duplicates,return=minimal'},
+     headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
      body:JSON.stringify({id:1,data:out,updated_at:new Date().toISOString()})});
-  if(!r.ok) throw new Error('Supabase write failed ('+r.status+')');
+  if(!r.ok) throw new Error('write failed ('+r.status+')');
   return true;
 }
 async function pushCloud(){
-  if(!cloud.on) return;
   cloud.state='saving'; renderSync();
-  try{ await sbSave(); cloud.state='ok'; cloud.at=new Date(); toast('Synced to cloud — every device sees this now'); }
-  catch(e){ cloud.state='err'; toast('Cloud sync failed: '+e.message); }
+  try{ await sbSave(); cloud.state='ok'; cloud.at=new Date(); toast('Published — everyone with the link sees this now'); }
+  catch(e){ cloud.state='err'; toast('Cloud save failed (kept on this device): '+e.message); }
   renderSync();
 }
-async function saveAll(){ saveLocal(true); if(cloud.on) await pushCloud(); else toast('Saved to this device'); }
+async function saveAll(){ saveLocal(true); await pushCloud(); }
 
 /* ---------- boot ---------- */
 async function boot(){
@@ -445,21 +445,19 @@ async function boot(){
     if(r.ok){const j=await r.json(); if(j&&j.outlets) PUB=j;}
   }catch(e){}
 
-  cloud.on=!!sbCfg();
+  cloud.on=true;
   let loaded=false;
-  if(cloud.on){
-    try{
-      const row=await sbLoad();
-      if(row&&row.data&&row.data.outlets){
-        DB=row.data; cloud.state='ok'; cloud.at=row.updated_at?new Date(row.updated_at):null; loaded=true;
-      }else{ cloud.state='empty'; }
-    }catch(e){ cloud.state='err'; }
-  }
+  try{
+    const row=await sbLoad();
+    if(row&&row.data&&row.data.outlets){
+      DB=row.data; cloud.state='ok'; cloud.at=row.updated_at?new Date(row.updated_at):null; loaded=true;
+    }else{ cloud.state='empty'; }
+  }catch(e){ cloud.state='err'; }
   if(!loaded){
     const local=readLocal();
     if(local&&local.data&&local.data.outlets){
       DB=local.data; DB._localAt=local.savedAt;
-      DB._stale=!cloud.on&&local.base&&PUB.generatedAt&&local.base!==PUB.generatedAt;
+      DB._stale=cloud.state!=='ok'&&local.base&&PUB.generatedAt&&local.base!==PUB.generatedAt;
     }else DB=JSON.parse(JSON.stringify(PUB));
   }
   normalise();
@@ -503,7 +501,7 @@ function normalise(){
 }
 
 /* ---------- chrome ---------- */
-const VIEWS=[['milestones','Milestones'],['calendar','Calendar'],['critical','Critical Path'],['manage','Setup'],['data','Data']];
+const VIEWS=[['milestones','Milestones'],['calendar','Calendar'],['critical','Critical Path'],['manage','Setup']];
 function renderTabs(){
   document.getElementById('tabs').innerHTML=VIEWS.map(([k,l])=>
     `<button class="${UI.view===k?'on':''}" data-v="${k}">${l}</button>`).join('');
@@ -512,35 +510,33 @@ function renderSync(){
   const el=document.getElementById('sync');
   const stamp=PUB&&PUB.generatedAt?PUB.generatedAt:'—';
   let cls='sync-in', html='';
-  const cloudBit = cloud.on
-    ? (cloud.state==='ok'   ? `<span class="dot2 c"></span>Cloud connected${cloud.at?' · synced '+cloud.at.toLocaleString():''}`
-      :cloud.state==='saving'? `<span class="dot2 c"></span>Syncing to cloud…`
-      :cloud.state==='empty' ? `<span class="dot2 a"></span>Cloud connected — nothing stored yet, press Save to push this dataset up`
-      :                        `<span class="dot2 r"></span>Cloud unreachable — working from this device`)
-    : '';
+  const cloudBit =
+      cloud.state==='ok'    ? `<span class="dot2 c"></span>Cloud synced${cloud.at?' · '+cloud.at.toLocaleString():''}`
+    : cloud.state==='saving'? `<span class="dot2 c"></span>Publishing…`
+    : cloud.state==='empty' ? `<span class="dot2 a"></span>Cloud is empty — press Save to publish this data`
+    :                         `<span class="dot2 r"></span>Cloud unreachable — changes saved on this device`;
   if(DB&&DB._stale){
     cls+=' warn';
-    html=`<span class="dot2 r"></span><b>The published data has moved on.</b>
-      This device is showing your own draft; the published set is dated ${esc(stamp)}.
+    html=`<span class="dot2 r"></span><b>This device has an unpublished draft.</b>
+      The published fallback is dated ${esc(stamp)}.
       <button class="btn sm" id="syncTakePub">Use published</button>
       <button class="btn sm" id="syncKeep">Keep my draft</button>`;
   }else if(dirty){
     cls+=' dirty';
     html=`<span class="dot2 a"></span><b>Unsaved changes.</b>
-      <button class="btn sm" id="syncSave">${cloud.on?'Save & sync':'Save draft'}</button>
-      ${cloud.on?'':'<button class="btn sm" id="syncPub">Download data.json</button>'}`;
+      <button class="btn sm" id="syncSave">Save &amp; publish</button>`;
   }else{
     html=`<span class="dot2 g"></span>${DB?DB.outlets.length:0} outlets · ${DB?DB.outlets.reduce((n,o)=>n+o.tasks.length,0):0} tasks
-      ${cloudBit?'<span style="margin:0 2px;color:var(--line-2)">|</span>'+cloudBit:''}
+      <span style="margin:0 2px;color:var(--line-2)">|</span>${cloudBit}
       <span class="spacer"></span>
-      <button class="btn sm ghost" id="syncPub">Download data.json</button>`;
+      <button class="btn sm ghost" id="syncBackup" title="Save a copy of the current data to your computer">Download backup</button>`;
   }
   el.innerHTML=`<div class="${cls}">${html}</div>`;
   el.querySelector('#syncSave')?.addEventListener('click',saveAll);
-  el.querySelector('#syncPub')?.addEventListener('click',exportJSON);
+  el.querySelector('#syncBackup')?.addEventListener('click',exportJSON);
   el.querySelector('#syncKeep')?.addEventListener('click',()=>{DB._stale=false;saveLocal(true);render();});
   el.querySelector('#syncTakePub')?.addEventListener('click',()=>{
-    if(!confirm("Replace this device's draft with the published dataset? Your local edits will be lost.")) return;
+    if(!confirm("Replace this device's draft with the published fallback data?")) return;
     DB=JSON.parse(JSON.stringify(PUB)); normalise();
     UI.outlet=DB.outlets[0]?.id; UI.outlets=new Set(DB.outlets.map(o=>o.id));
     localStorage.removeItem(LS); dirty=false; render();
@@ -555,11 +551,10 @@ function render(){
   });
   renderTabs(); renderSync();
   const app=document.getElementById('app');
-  if(UI.view==='milestones')app.innerHTML=viewMilestones();
-  else if(UI.view==='calendar')app.innerHTML=viewCalendar();
+  if(UI.view==='calendar')app.innerHTML=viewCalendar();
   else if(UI.view==='critical')app.innerHTML=viewCritical();
   else if(UI.view==='manage')app.innerHTML=viewManage();
-  else app.innerHTML=viewData();
+  else app.innerHTML=viewMilestones();
   wire();
   document.querySelectorAll('[data-keepscroll]').forEach(el=>{
     const k=keep[el.dataset.keepscroll];
@@ -1187,74 +1182,6 @@ function viewManage(){
   </div>`;
 }
 
-/* ============================== DATA ============================== */
-function viewData(){
-  const cfg=sbCfg();
-  return `<div class="card">
-    <div class="card-h"><h2>Cloud sync — Supabase</h2>
-      <span class="sub">${cfg?'Connected: '+esc(cfg.url):'Not connected'}</span></div>
-    <div class="card-b">
-      <p class="hint" style="margin-bottom:14px">Connect a free Supabase project and every device that opens
-      this tracker reads and writes the same dataset — the phone stops asking for the workbook. Full setup
-      steps are in the README; in short: create the project, run the SQL to make the
-      <span class="mono">tracker_state</span> table, then paste the Project URL and anon key here.</p>
-      <div class="grid2">
-        <div class="fld"><label>Project URL</label>
-          <input type="text" id="sb_url" value="${cfg?esc(cfg.url):''}" placeholder="https://abcdefgh.supabase.co"></div>
-        <div class="fld"><label>Anon public key</label>
-          <input type="password" id="sb_key" value="${cfg?esc(cfg.key):''}" placeholder="eyJhbGciOi…"></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn pri" id="sb_connect">${cfg?'Reconnect & load':'Connect & load'}</button>
-        ${cfg?'<button class="btn" id="sb_push">Push current data to cloud</button>':''}
-        ${cfg?'<button class="btn dngr" id="sb_off">Disconnect</button>':''}
-      </div>
-      <p class="hint" style="margin-top:12px">The URL and key stay in this browser only — they are never
-      written into the dataset. Anyone with the link and the anon key can edit, so share both only with the team.</p>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-h"><h2>Files</h2></div>
-    <div class="card-b">
-      <p class="hint" style="margin-bottom:12px">Without cloud sync, publishing works through the repo:
-      edit here, press <b>Download data.json</b>, and commit the file next to <span class="mono">index.html</span>.
-      Every device then loads it automatically.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn pri" id="dExpJSON">Download data.json</button>
-        <button class="btn" id="dImpJSON">Load a data.json</button>
-        <button class="btn" id="dImpXL">Import critical paths from Excel</button>
-        <button class="btn" id="dSave">Save draft to this device</button>
-        <button class="btn dngr" id="dReset">Discard local draft</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-h"><h2>Importing a workbook</h2></div>
-    <div class="card-b hint">
-      Each worksheet becomes one outlet. The importer reads the date row across the top, the
-      Description / Responsibility / Completed Level / Department columns, <span class="mono">1</span>s for the
-      bars, and merged vertical text blocks (<span class="mono">POYA DAY</span> and the like) as holidays.
-      Every holiday found goes onto the shared programme calendar; where a sheet shows work happening on one
-      of those days, that outlet gets a works-anyway exception automatically. Categories and milestone flags
-      are assigned from the task wording as a starting point, and re-importing keeps your choices for any
-      task whose name is unchanged.
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-h"><h2>What is loaded</h2></div>
-    <div class="card-b"><div class="stat">
-      <div><b>${DB.outlets.length}</b><span>Outlets</span></div>
-      <div><b>${DB.outlets.reduce((n,o)=>n+o.tasks.length,0)}</b><span>Tasks</span></div>
-      <div><b>${DB.outlets.reduce((n,o)=>n+o.tasks.filter(t=>t.ms).length,0)}</b><span>Flagged</span></div>
-      <div><b>${DB.categories.length}</b><span>Categories</span></div>
-      <div><b>${DB.holidays.length}</b><span>Marked days</span></div>
-    </div></div>
-  </div>`;
-}
-
 /* ========================== EXCEL IMPORT ========================== */
 const CAT_RULES=[
  ['prep',/tempor|tempory|to the container|equipment removal|rack arrangement|temporary setup/i],
@@ -1600,48 +1527,6 @@ function wire(){
     UI.outlets.delete(o.id);
     if(UI.outlet===o.id)UI.outlet=DB.outlets[0]?.id||null;
     markDirty(); render();
-  });
-
-  /* ---- data ---- */
-  on('dExpJSON',exportJSON);
-  on('dImpJSON',()=>$('fileJs').click());
-  on('dImpXL',()=>$('fileXl').click());
-  on('dSave',()=>saveLocal());
-  on('dReset',()=>{
-    if(!confirm('Discard the draft on this device and reload the published data?'))return;
-    localStorage.removeItem(LS);
-    DB=JSON.parse(JSON.stringify(PUB)); normalise();
-    UI.outlet=DB.outlets[0]?.id; UI.outlets=new Set(DB.outlets.map(o=>o.id));
-    dirty=false; render();
-  });
-  on('sb_connect',async()=>{
-    const url=$('sb_url').value.trim().replace(/\/$/,''), key=$('sb_key').value.trim();
-    if(!url||!key){toast('Both the project URL and the anon key are needed');return;}
-    localStorage.setItem(LSB,JSON.stringify({url,key}));
-    cloud.on=true; cloud.state='saving'; renderSync();
-    try{
-      const row=await sbLoad();
-      if(row&&row.data&&row.data.outlets){
-        if(confirm('The cloud already holds a dataset ('+row.data.outlets.length+' outlets, updated '+
-          (row.updated_at?new Date(row.updated_at).toLocaleString():'unknown')+').\n\nOK = load it here · Cancel = keep this data and push it up instead')){
-          DB=row.data; normalise();
-          UI.outlet=DB.outlets[0]?.id; UI.outlets=new Set(DB.outlets.map(o=>o.id));
-          dirty=false; cloud.state='ok'; cloud.at=row.updated_at?new Date(row.updated_at):null;
-          toast('Loaded from cloud');
-        }else{ await pushCloud(); }
-      }else{
-        cloud.state='empty';
-        if(confirm('Connected — the cloud is empty. Push the current dataset up now?')) await pushCloud();
-      }
-    }catch(e){ cloud.state='err'; toast('Could not reach Supabase: '+e.message); }
-    render();
-  });
-  on('sb_push',pushCloud);
-  on('sb_off',()=>{
-    localStorage.removeItem(LSB);
-    cloud={on:false,state:'off',at:null};
-    toast('Disconnected — this device keeps working from its local copy');
-    render();
   });
 
   /* ---- persistent chrome ---- */

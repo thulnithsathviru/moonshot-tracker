@@ -19,41 +19,84 @@ web page. No build step, no server code: `index.html` + `data.json` is the whole
 3. **`data.json`** — the published file sitting next to `index.html`.
 4. **Baked-in copy** — a snapshot inside `index.html`, so the file works even alone.
 
-## Cloud sync with Supabase (recommended)
+## The database (Supabase) — already wired in
 
-One free Supabase project makes every device read and write the same dataset — no more
-downloading and committing `data.json` to move edits between the laptop and the phone.
+The tracker is connected to a Supabase project in the code itself, so there is **no
+sign-in and nothing to configure** — open the link and it reads and writes the shared
+dataset. Anyone you give the link to can view *and* edit; there is no separate login.
 
-1. Create a free account at **supabase.com** → **New project** (any name/region; note the database password it asks you to set, though the tracker never uses it).
-2. In the project, open **SQL Editor** → **New query**, paste and **Run**:
+The project URL and the *publishable* (anon) key are baked into `index.html`. These are
+not secrets — Supabase designs them to live in frontend code. They grant only what the
+database's Row Level Security policy allows, which for this project is deliberately open:
+read + write to anyone with the link.
+
+### One-time database setup
+
+If the `tracker_state` table isn't set up yet, run this once in the Supabase
+**SQL Editor** (New query → paste → Run):
 
 ```sql
-create table tracker_state (
+create table if not exists tracker_state (
   id int primary key,
   data jsonb,
   updated_at timestamptz
 );
+
 alter table tracker_state enable row level security;
-create policy "team access" on tracker_state
+
+-- remove any locked-down policies from an earlier attempt (safe if none exist)
+drop policy if exists "team read"   on tracker_state;
+drop policy if exists "team insert" on tracker_state;
+drop policy if exists "team update" on tracker_state;
+drop policy if exists "team access" on tracker_state;
+
+-- open read + write to anyone with the link
+create policy "public access" on tracker_state
   for all to anon using (true) with check (true);
+
+-- make sure the anon role can reach the table
+-- (needed because "Automatically expose new tables" is off)
+grant select, insert, update on tracker_state to anon;
 ```
 
-3. Go to **Settings → API** and copy two things: the **Project URL**
-   (`https://xxxx.supabase.co`) and the **anon public** key.
-4. Open the tracker → **Data** tab → paste both → **Connect & load**.
-   The cloud is empty at first, so let it **push** the current dataset up.
-5. Repeat step 4 on every device (phone included). From then on **Save** writes to the
-   cloud and opening the page loads from it.
+That's the whole backend. No users, no auth settings to touch. (The "Allow new users to
+sign up" toggle is irrelevant here since nobody signs in — leave it off.)
 
-**Sharing note:** the anon key + URL together grant edit access to the tracker's data.
-Share them only with the team — don't paste them into the public repo. They live in each
-browser's local storage, never inside `data.json`.
+### Seeding the data (first run)
 
-## Publishing without Supabase
+1. Open the deployed tracker. The cloud starts empty, so it shows the built-in snapshot
+   (all 20 outlets) and the banner reads *"Cloud is empty — press Save to publish."*
+2. Press **Save** in the top bar. That pushes the current data up to Supabase.
+3. Done. From now on every device that opens the link loads the same live data, and
+   **Save** publishes changes for everyone.
 
-Edit → **Save** → **Download data.json** → replace the file in the repo → commit.
-Everyone gets the new data on refresh. (The repo holds live handover dates — a private
-repo is strongly recommended.)
+### Day-to-day
+
+- **Edit anywhere, press Save** — the change lands in the database and every other device
+  picks it up on its next open/refresh.
+- **New outlets or a revised critical path** — press **Import Excel** (top bar), pick the
+  workbook, choose the sheets, and Save. Re-importing an existing outlet refreshes its
+  **dates** while keeping your category and milestone choices for tasks whose names are
+  unchanged.
+- **Download backup** (in the status bar) saves a `data.json` copy to your computer. Since
+  anyone with the link can overwrite the data, grab a backup before big changes — you can
+  restore it, or reseed from the Excel, at any time.
+
+### Who can access — read this once
+
+There is no login, so **the link is the key**: anyone who has it can view and edit the
+programme data. Share it only within the team (WhatsApp, email), the way you'd share an
+"anyone with the link can edit" Google Sheet. If the link ever leaks and you need to cut
+access, rotate the project's anon key in Supabase (**Project Settings → API → roll the
+anon key**) and redeploy `index.html` with the new key — the old link then stops working.
+
+## The `data.json` fallback
+
+`data.json` in the repo is only a **fallback snapshot** — the tracker uses it when the
+database can't be reached (offline, or before the one-time seed). Day to day, the live
+data lives in Supabase and you don't need to touch this file. If you want to refresh the
+snapshot, press **Download backup** and commit the file. Because it carries live handover
+dates, a **private repo is strongly recommended**.
 
 ## How the pieces work
 
@@ -82,10 +125,11 @@ blocked days show the solid curtain with the vertical label, exactly like the Ex
 **Setup.** Rename/recolour categories, day types, outlets; the whole programme calendar in
 one table, with each date's per-outlet exceptions listed.
 
-**Import.** Drop the critical-paths workbook in any time. Sheets become outlets; holiday
-text blocks land on the shared calendar; where a sheet shows work on a marked day, that
-outlet gets the works-anyway exception automatically. Re-importing keeps your category and
-milestone choices for any task whose name hasn't changed.
+**Import.** Press **Import Excel** in the top bar to drop the critical-paths workbook in
+any time. Sheets become outlets; holiday text blocks land on the shared calendar; where a
+sheet shows work on a marked day, that outlet gets the works-anyway exception
+automatically. Re-importing refreshes an existing outlet's **dates** while keeping your
+category and milestone choices for any task whose name hasn't changed.
 
 ## Hosting
 
