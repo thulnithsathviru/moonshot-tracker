@@ -72,15 +72,20 @@ sign up" toggle is irrelevant here since nobody signs in — leave it off.)
 
 ### Day-to-day
 
-- **Edit anywhere, press Save** — the change lands in the database and every other device
-  picks it up on its next open/refresh.
+- **Everything autosaves.** Edit anywhere and the change publishes to the database within a
+  second or two — the status bar shows "Saving…" then "All changes saved". Other devices
+  pick it up on their next open or refresh. There is no Save button to remember.
 - **New outlets or a revised critical path** — press **Import Excel** (top bar), pick the
-  workbook, choose the sheets, and Save. Re-importing an existing outlet refreshes its
-  **dates** while keeping your category and milestone choices for tasks whose names are
-  unchanged.
-- **Download backup** (in the status bar) saves a `data.json` copy to your computer. Since
-  anyone with the link can overwrite the data, grab a backup before big changes — you can
-  restore it, or reseed from the Excel, at any time.
+  sheets, done. Re-importing an existing outlet refreshes its **dates** while keeping your
+  category and milestone choices for tasks whose names are unchanged.
+- **Editing the critical path** — turn on **Edit** and every task's name, dates,
+  responsible people, department and category become editable right in the frozen columns;
+  ◆ flags a task as a milestone. Click a date header to mark a special day (one day or a
+  range) with an optional per-outlet works-anyway exception.
+- **Export** (top bar) renders the current page — the complete table, including everything
+  scrolled out of view — as a PNG or PDF.
+- **Backup** (Setup page) downloads a full safety copy; restore replaces the live data.
+  Since anyone with the link can edit, grab a backup before big changes.
 
 ### Who can access — read this once
 

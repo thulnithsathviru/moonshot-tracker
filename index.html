@@ -139,18 +139,23 @@ table.mtx tbody tr.launch td{background:rgba(0,113,227,.05)}
 .dim{color:var(--line-2)}
 
 /* ---------- gantt ---------- */
-.gantt{overflow:auto;-webkit-overflow-scrolling:touch;position:relative;max-height:calc(100vh - 260px);border-radius:0 0 var(--radius) var(--radius)}
+.gantt{overflow:auto;-webkit-overflow-scrolling:touch;position:relative;max-height:calc(100vh - 250px);border-radius:0 0 var(--radius) var(--radius)}
 .gt{border-collapse:separate;border-spacing:0;font-size:12px}
 .gt th,.gt td{padding:0;margin:0}
-.gt .lab{position:sticky;left:0;z-index:3;background:var(--surface);min-width:var(--labelw);max-width:var(--labelw);width:var(--labelw);border-right:1px solid var(--line-2);border-bottom:1px solid var(--line);padding:4px 10px;text-align:left;vertical-align:middle}
-.gt thead .lab{z-index:6;background:var(--surface-2);border-bottom:1px solid var(--line-2);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.gt .fc{position:sticky;z-index:3;background:var(--surface);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 9px;text-align:left;vertical-align:middle;font-size:11.5px}
+.gt .fc.last{border-right:2px solid var(--line-2)}
+.gt thead .fc{z-index:7;top:0;background:var(--surface-2);border-bottom:1px solid var(--line-2);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:700;vertical-align:bottom;padding-bottom:8px}
+.gt tbody tr:hover .fc{background:#F5F9FE}
 .gt thead th{position:sticky;top:0;z-index:4;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
-.gt .d{width:var(--cell);min-width:var(--cell);max-width:var(--cell);border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;position:relative}
-.gt .dh{cursor:pointer;padding:4px 0 5px;line-height:1.15;transition:.12s}
+.gt .d{width:var(--cell);min-width:var(--cell);max-width:var(--cell);border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+.gt tbody .d{position:relative}
+.gt .dh{cursor:pointer;padding:3px 0 4px;line-height:1.1;transition:.12s;vertical-align:bottom}
 .gt .dh:hover{background:var(--accent-soft)!important}
+.gt .dh .vlbl{height:64px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;margin-bottom:2px}
+.gt .dh .vlbl span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;max-height:64px;overflow:hidden;color:#fff}
 .gt .dh .dow{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:650}
 .gt .dh .dd{font-size:12px;font-weight:620;font-family:var(--mono)}
-.gt .dh .mo{font-size:8px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
+.gt .dh .mo{font-size:8px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;min-height:9px}
 .gt .dh.we{background:#F0F0F3}
 .gt .dh.today{box-shadow:inset 0 -3px 0 var(--accent)}
 .gt .dh.today .dd{color:var(--accent)}
@@ -158,28 +163,31 @@ table.mtx tbody tr.launch td{background:rgba(0,113,227,.05)}
 .gt tbody .d.we{background:#F7F7F9}
 .gt tbody .d.cell{cursor:pointer}
 .gt tbody .d.cell:hover{box-shadow:inset 0 0 0 2px var(--accent)}
-.gt tbody tr:hover .lab{background:#F5F9FE}
 .gbar{position:absolute;inset:3px 0;background:var(--barc,#2b3d4d);border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);z-index:2}
 .gbar.s{left:2px;border-radius:6px 3px 3px 6px}
 .gbar.e{right:2px;border-radius:3px 6px 6px 3px}
 .gbar.ms::after{content:"";position:absolute;top:50%;left:50%;width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg);background:#fff;border-radius:1px}
-.holcurtain{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;z-index:1}
+.holcurtain{position:absolute;inset:0;pointer-events:none;z-index:1}
 .holcurtain.soft{opacity:.22}
-.holcurtain span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:9.5px;font-weight:680;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;opacity:.95}
 .tname{font-weight:550;line-height:1.25;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
-.tmeta{font-size:10px;color:var(--ink-3);display:flex;gap:5px;align-items:center;margin-top:1px}
+.fc .sub2{font-size:10px;color:var(--ink-3);line-height:1.3}
+.fc.wrap{white-space:normal;line-height:1.3;font-size:11px;color:var(--ink-2)}
 .catdot{width:7px;height:7px;border-radius:2.5px;flex:none;display:inline-block}
 .msflag{color:var(--warn);font-size:10px;font-weight:700}
-.rowbtns{display:flex;gap:2px;opacity:0;transition:opacity .12s}
-.gt tbody tr:hover .rowbtns{opacity:1}
+.gt .fc input[type=text],.gt .fc input[type=date],.gt .fc select{width:100%;padding:4px 6px;font-size:11px;border-radius:7px}
+.rowact{display:flex;gap:1px;flex-wrap:wrap}
 .ibtn{border:0;background:none;padding:3px 5px;border-radius:6px;color:var(--ink-3);font-size:12px;line-height:1;cursor:pointer;transition:.12s}
 .ibtn:hover{background:var(--surface-2);color:var(--ink)}
+.ibtn.on{color:var(--warn)}
 .ibtn.del:hover{background:#FFF1F0;color:#C0271A}
 .stat{display:flex;gap:22px;flex-wrap:wrap}
 .stat div{display:flex;flex-direction:column}
 .stat b{font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:-.02em}
 .stat span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:650;margin-top:1px}
-
+/* exporting: neutralise sticky so the whole table rasterises flat */
+.exporting .gt .fc,.exporting .gt thead th,.exporting .gt thead .fc{position:static!important}
+.exporting .gantt{max-height:none!important;overflow:visible!important}
+.exporting .mtx-outer{overflow:visible!important}
 /* ---------- calendar (old chip design) ---------- */
 .cal-dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:7px;padding:18px 20px 0}
 .cal-dow div{text-align:center;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
@@ -217,6 +225,14 @@ table.mtx tbody tr.launch td{background:rgba(0,113,227,.05)}
 .cal-legend{display:flex;gap:8px 16px;flex-wrap:wrap;justify-content:center;padding:0 20px 18px}
 .cal-legend span{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-2);font-weight:500}
 .cal-legend i{width:9px;height:9px;border-radius:3px}
+
+/* ---------- outlet cards ---------- */
+.ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:16px 20px}
+.ocard{border:1px solid var(--line);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:7px;background:var(--surface)}
+.ocard .orow{display:flex;align-items:center;gap:8px}
+.ocard input[type=text]{flex:1;font-weight:600;font-size:13px;border-color:transparent;padding:5px 7px}
+.ocard input[type=text]:hover,.ocard input[type=text]:focus{border-color:var(--line-2)}
+.ocard .ometa{font-size:11px;color:var(--ink-3);line-height:1.5;padding-left:2px}
 
 /* ---------- modal ---------- */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.32);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -279,12 +295,12 @@ table.mtx tbody tr.launch td{background:rgba(0,113,227,.05)}
 <body>
 <header class="topbar">
   <div class="twrap">
-    <div class="brand"><span class="dot"></span>Moonshot <small>Programme Tracker</small></div>
+    <div class="brand">Moonshot <small>Programme Tracker</small></div>
     <div class="spacer"></div>
     <nav class="seg" id="tabs"></nav>
     <div class="spacer"></div>
     <button class="btn sm ghost" id="btnImport">Import Excel</button>
-    <button class="btn sm dark" id="btnSave">Save</button>
+    <button class="btn sm dark" id="btnExport">Export</button>
   </div>
 </header>
 <div class="sync" id="sync"></div>
@@ -315,7 +331,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
 const LS  = 'moonshot.tracker.v3';
 let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
 let UI={ view:'milestones', outlet:null, calMode:'month', calDate:null,
-         outlets:null, group:true, msEdit:false };
+         outlets:null, cpEdit:false };
 
 const PALETTE=["#0071E3","#34C759","#FF9500","#AF52DE","#FF2D55","#E91E8C","#00897B","#F59E0B","#A2845E","#7B1FA2","#C7A500","#8E8E93"];
 
@@ -356,11 +372,10 @@ const outletOf=id=>DB.outlets.find(o=>o.id===id);
 
 /** The programme calendar is global. */
 function holidayOn(date){ return DB.holidays.find(h=>h.date===date)||null; }
-/** Blocked for this outlet: a non-working day type, unless the outlet has a works-anyway exception. */
+/** Blocked for this outlet: any marked day, unless the outlet has a works-anyway exception. */
 function blockedOn(o,date){
   const h=holidayOn(date);
   if(!h) return false;
-  if(dayType(h.typeId).working) return false;
   return !(o && (o.worksOn||[]).includes(date));
 }
 function activeDays(o,t){
@@ -394,16 +409,28 @@ function msRange(o,cid){
 }
 
 /* ---------- storage ---------- */
-function saveLocal(silent){
-  try{
-    localStorage.setItem(LS,JSON.stringify({savedAt:new Date().toISOString(),base:PUB?PUB.generatedAt:null,data:DB}));
-    dirty=false;
-    if(!silent) toast('Saved on this device — publishing to cloud…');
-    renderSync();
-  }catch(e){ toast('Could not save: '+e.message); }
+function saveLocal(){
+  try{ localStorage.setItem(LS,JSON.stringify({savedAt:new Date().toISOString(),data:DB})); }
+  catch(e){}
 }
 function readLocal(){ try{const r=localStorage.getItem(LS);return r?JSON.parse(r):null;}catch(e){return null;} }
-function markDirty(){ dirty=true; renderSync(); }
+/* Every edit autosaves: locally at once, to the cloud after a short pause. */
+let autoT=null;
+function markDirty(){
+  dirty=true; saveLocal();
+  clearTimeout(autoT);
+  autoT=setTimeout(flushSave,1200);
+  renderSync();
+}
+async function flushSave(){
+  clearTimeout(autoT); autoT=null;
+  if(!dirty) return;
+  await pushCloud();
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden') flushSave();
+});
+window.addEventListener('pagehide',()=>flushSave());
 
 /* ---------- Supabase (baked-in project · open access · no login) ----------
    The URL and key below identify the project and are meant to live in frontend
@@ -431,11 +458,10 @@ async function sbSave(){
 }
 async function pushCloud(){
   cloud.state='saving'; renderSync();
-  try{ await sbSave(); cloud.state='ok'; cloud.at=new Date(); toast('Published — everyone with the link sees this now'); }
-  catch(e){ cloud.state='err'; toast('Cloud save failed (kept on this device): '+e.message); }
+  try{ await sbSave(); cloud.state='ok'; cloud.at=new Date(); dirty=false; }
+  catch(e){ cloud.state='err'; }
   renderSync();
 }
-async function saveAll(){ saveLocal(true); await pushCloud(); }
 
 /* ---------- boot ---------- */
 async function boot(){
@@ -455,10 +481,8 @@ async function boot(){
   }catch(e){ cloud.state='err'; }
   if(!loaded){
     const local=readLocal();
-    if(local&&local.data&&local.data.outlets){
-      DB=local.data; DB._localAt=local.savedAt;
-      DB._stale=cloud.state!=='ok'&&local.base&&PUB.generatedAt&&local.base!==PUB.generatedAt;
-    }else DB=JSON.parse(JSON.stringify(PUB));
+    if(local&&local.data&&local.data.outlets) DB=local.data;
+    else DB=JSON.parse(JSON.stringify(PUB));
   }
   normalise();
   UI.outlet=DB.outlets.length?DB.outlets[0].id:null;
@@ -497,6 +521,7 @@ function normalise(){
       if(!t.id)t.id=uid('t');
     });
   });
+  DB.dayTypes.forEach(t=>{delete t.working; if(t.name==='Note (work continues)')t.name='Note';});
   DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
@@ -508,39 +533,21 @@ function renderTabs(){
 }
 function renderSync(){
   const el=document.getElementById('sync');
-  const stamp=PUB&&PUB.generatedAt?PUB.generatedAt:'—';
   let cls='sync-in', html='';
-  const cloudBit =
-      cloud.state==='ok'    ? `<span class="dot2 c"></span>Cloud synced${cloud.at?' · '+cloud.at.toLocaleString():''}`
-    : cloud.state==='saving'? `<span class="dot2 c"></span>Publishing…`
-    : cloud.state==='empty' ? `<span class="dot2 a"></span>Cloud is empty — press Save to publish this data`
-    :                         `<span class="dot2 r"></span>Cloud unreachable — changes saved on this device`;
-  if(DB&&DB._stale){
-    cls+=' warn';
-    html=`<span class="dot2 r"></span><b>This device has an unpublished draft.</b>
-      The published fallback is dated ${esc(stamp)}.
-      <button class="btn sm" id="syncTakePub">Use published</button>
-      <button class="btn sm" id="syncKeep">Keep my draft</button>`;
-  }else if(dirty){
-    cls+=' dirty';
-    html=`<span class="dot2 a"></span><b>Unsaved changes.</b>
-      <button class="btn sm" id="syncSave">Save &amp; publish</button>`;
+  const n=DB?DB.outlets.length:0, t=DB?DB.outlets.reduce((a,o)=>a+o.tasks.length,0):0;
+  if(cloud.state==='saving'||autoT){
+    html=`<span class="dot2 c"></span>Saving…`;
+  }else if(cloud.state==='ok'){
+    html=`<span class="dot2 g"></span>All changes saved${cloud.at?' · '+cloud.at.toLocaleTimeString():''} <span style="color:var(--line-2)">|</span> ${n} outlets · ${t} tasks`;
+  }else if(cloud.state==='empty'){
+    html=`<span class="dot2 a"></span>Cloud is empty — your first change will publish automatically <span style="color:var(--line-2)">|</span> ${n} outlets · ${t} tasks`;
   }else{
-    html=`<span class="dot2 g"></span>${DB?DB.outlets.length:0} outlets · ${DB?DB.outlets.reduce((n,o)=>n+o.tasks.length,0):0} tasks
-      <span style="margin:0 2px;color:var(--line-2)">|</span>${cloudBit}
-      <span class="spacer"></span>
-      <button class="btn sm ghost" id="syncBackup" title="Save a copy of the current data to your computer">Download backup</button>`;
+    cls+=' dirty';
+    html=`<span class="dot2 r"></span>Offline — changes are kept on this device
+      <button class="btn sm" id="syncRetry">Retry</button>`;
   }
   el.innerHTML=`<div class="${cls}">${html}</div>`;
-  el.querySelector('#syncSave')?.addEventListener('click',saveAll);
-  el.querySelector('#syncBackup')?.addEventListener('click',exportJSON);
-  el.querySelector('#syncKeep')?.addEventListener('click',()=>{DB._stale=false;saveLocal(true);render();});
-  el.querySelector('#syncTakePub')?.addEventListener('click',()=>{
-    if(!confirm("Replace this device's draft with the published fallback data?")) return;
-    DB=JSON.parse(JSON.stringify(PUB)); normalise();
-    UI.outlet=DB.outlets[0]?.id; UI.outlets=new Set(DB.outlets.map(o=>o.id));
-    localStorage.removeItem(LS); dirty=false; render();
-  });
+  el.querySelector('#syncRetry')?.addEventListener('click',()=>{dirty=true;flushSave();});
 }
 /** Re-render, keeping every scroll position where it was (fixes the jump-to-top). */
 function render(){
@@ -568,6 +575,44 @@ function toast(m){
   clearTimeout(toast._t); toast._t=setTimeout(()=>t.innerHTML='',2600);
 }
 function closeModal(){document.getElementById('modal').innerHTML='';}
+/** In-app replacements for confirm()/prompt() — no browser popups. */
+function uiConfirm(msg,opt={}){
+  return new Promise(res=>{
+    showModal(`<div class="mod" style="width:min(430px,100%)">
+      <div class="mod-h"><h3>${esc(opt.title||'Are you sure?')}</h3><span class="spacer"></span>
+        <button class="x" id="uc_x">✕</button></div>
+      <div class="mod-b"><p class="hint" style="font-size:13px;color:var(--ink)">${msg}</p></div>
+      <div class="mod-f">
+        <button class="btn ${opt.danger?'dngr':'pri'}" id="uc_ok">${esc(opt.ok||'Yes')}</button>
+        <span class="spacer"></span>
+        <button class="btn" id="uc_no">${esc(opt.cancel||'Cancel')}</button>
+      </div></div>`);
+    const done=v=>{closeModal();res(v);};
+    document.getElementById('uc_ok').onclick=()=>done(true);
+    document.getElementById('uc_no').onclick=()=>done(false);
+    document.getElementById('uc_x').onclick=()=>done(false);
+  });
+}
+function uiPrompt(msg,opt={}){
+  return new Promise(res=>{
+    showModal(`<div class="mod" style="width:min(430px,100%)">
+      <div class="mod-h"><h3>${esc(opt.title||'Enter a value')}</h3><span class="spacer"></span>
+        <button class="x" id="up_x">✕</button></div>
+      <div class="mod-b">${msg?`<p class="hint" style="margin-bottom:10px">${msg}</p>`:''}
+        <input type="text" id="up_v" value="${esc(opt.value||'')}" placeholder="${esc(opt.placeholder||'')}" style="width:100%"></div>
+      <div class="mod-f">
+        <button class="btn pri" id="up_ok">${esc(opt.ok||'Add')}</button>
+        <span class="spacer"></span>
+        <button class="btn" id="up_no">Cancel</button>
+      </div></div>`);
+    const done=v=>{closeModal();res(v);};
+    const inp=document.getElementById('up_v'); inp.focus();
+    inp.onkeydown=e=>{if(e.key==='Enter')done(inp.value.trim()||null);};
+    document.getElementById('up_ok').onclick=()=>done(inp.value.trim()||null);
+    document.getElementById('up_no').onclick=()=>done(null);
+    document.getElementById('up_x').onclick=()=>done(null);
+  });
+}
 function showModal(html){
   document.getElementById('modal').innerHTML=`<div class="ov" id="ov">${html}</div>`;
   document.getElementById('ov').addEventListener('mousedown',e=>{if(e.target.id==='ov')closeModal();});
@@ -576,14 +621,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 </script>
 
 <script>
-/* ================== MILESTONES (old slide-style matrix) ================== */
-/* Outlets are columns with their own colour; categories are numbered rows.
-   Each cell is the combined date range of every milestone-flagged task in
-   that category — "this is the time range for this milestone". */
+/* ---------- shared outlet picker ---------- */
+function outletChips(){
+  return `<div class="chips">
+    <button class="fchip on" id="outAll" style="color:var(--ink-2)"><i></i>All</button>
+    <button class="fchip on" id="outNone" style="color:var(--ink-2)"><i></i>None</button>
+    ${DB.outlets.map(o=>`<button class="fchip ${UI.outlets.has(o.id)?'on':''}" data-outsel="${o.id}" style="color:${o.color}"><i></i>${esc(o.name)}</button>`).join('')}
+  </div>`;
+}
+
+/* ================== MILESTONES (transposed slide matrix) ================== */
 function viewMilestones(){
   const cats=DB.categories.filter(c=>c.inMilestones);
-  const outs=DB.outlets;
-  const pick=UI.msEdit;
+  const outs=DB.outlets.filter(o=>UI.outlets.has(o.id));
 
   const head=outs.map(o=>`<th style="background:${o.color};min-width:96px">
       <span class="oname">${esc(o.name)}</span></th>`).join('');
@@ -592,24 +642,22 @@ function viewMilestones(){
   cats.forEach((c,idx)=>{
     const tds=outs.map(o=>{
       const r=msRange(o,c.id);
-      if(!r) return `<td><span class="dt dim ${pick?'pick':''}" ${pick?`data-mspick="${o.id}|${c.id}"`:''}>·</span></td>`;
+      if(!r) return `<td><span class="dt dim">·</span></td>`;
       const txt=fmtRange(r.start,r.end);
       const done=r.end<today();
-      return `<td><span class="dt ${r.start!==r.end?'rng':''} ${done&&UI.strike?'done':''} ${pick?'pick':''}"
-        ${pick?`data-mspick="${o.id}|${c.id}"`:''} title="${r.n} task${r.n===1?'':'s'} flagged"
+      return `<td><span class="dt ${r.start!==r.end?'rng':''} ${done&&UI.strike?'done':''}"
+        title="${r.n} task${r.n===1?'':'s'} flagged ◆"
         style="color:${darken(o.color,.30)};font-weight:600">${txt}</span></td>`;
     }).join('');
     body+=`<tr><td class="lead"><span class="num">${String(idx+1).padStart(2,'0')}</span><span class="cdot" style="background:${c.color}"></span>${esc(c.name)}</td>${tds}</tr>`;
   });
 
-  // Handover row
   body+=`<tr class="hand"><td class="lead"><span class="num" style="visibility:hidden">00</span>Handover</td>`+
     outs.map(o=>`<td><span class="dt" style="color:${darken(o.color,.30)};font-weight:700">${fmt(handoverDate(o))}</span></td>`).join('')+`</tr>`;
-  // Launch row — manual dates
   body+=`<tr class="launch"><td class="lead"><span class="num" style="visibility:hidden">00</span>Launch date</td>`+
     outs.map(o=>{
       const has=!!o.launch;
-      return `<td><span class="dt pick" data-launch="${o.id}"
+      return `<td><span class="dt pick" data-launch="${o.id}" title="Click to set"
         style="color:${has?'var(--accent)':'var(--line-2)'};font-weight:${has?700:400}">${has?fmt(o.launch):'·'}</span></td>`;
     }).join('')+`</tr>`;
 
@@ -620,15 +668,13 @@ function viewMilestones(){
         `<button class="fchip ${c.inMilestones?'on':''}" data-mscat="${c.id}" style="color:${c.color}"><i></i>${esc(c.name)}</button>`).join('')}</div>
       <span class="spacer"></span>
       <button class="btn sm ${UI.strike?'on':''}" id="msStrike" title="Strike through milestones whose last day has passed">Strike past</button>
-      <button class="btn sm ${pick?'on':''}" id="msEdit">${pick?'Done editing':'Edit cells'}</button>
-      <button class="btn sm" id="expPNG" data-t="msSlide">PNG</button>
-      <button class="btn sm" id="expPDF" data-t="msSlide">PDF</button>
     </div>
+    <div class="bar">${outletChips()}</div>
     <div class="mtx-outer" id="msSlide" data-keepscroll="ms">
       <div class="slide-head">
         <div><span class="eyebrow">Moonshot Programme</span>
           <h2>Milestone Matrix</h2>
-          <div class="sub">Combined date range of the flagged tasks in each work package, per outlet</div></div>
+          <div class="sub">Combined date range of the ◆-flagged tasks in each work package, per outlet</div></div>
         <div class="right"><b>${outs.length} outlets</b>${totalMs} milestones · ${cats.length} of ${DB.categories.length} categories</div>
       </div>
       <table class="mtx">
@@ -637,39 +683,13 @@ function viewMilestones(){
       </table>
     </div>
     <div class="card-b hint" style="border-top:1px solid var(--line)">
-      A cell spans from the first day of the earliest flagged task to the last day of the latest one in that
-      category. Flag tasks with ◆ on the Critical Path — or press <b>Edit cells</b> and click any cell to
-      choose which of that outlet's tasks count. Click a Launch cell to set the launch date by hand.
+      A cell spans from the first day of the earliest ◆-flagged task to the last day of the latest one in
+      that category. Flag tasks on the Critical Path (turn on <b>Edit</b> and use the ◆ button per row).
+      Click a Launch cell to set the launch date by hand.
     </div>
   </div>`;
 }
 
-/* Cell editor: choose which tasks in this outlet+category are flagged. */
-function msCellEditor(outId,cid){
-  const o=outletOf(outId), c=cat(cid);
-  const ts=o.tasks.filter(t=>t.cat===cid);
-  const rows=ts.length?ts.map(t=>`<label class="cbrow" style="padding:7px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px">
-      <input type="checkbox" data-msck="${t.id}" ${t.ms?'checked':''}>
-      <span style="flex:1">${esc(t.name)}</span>
-      <span class="mono" style="color:var(--ink-3);font-size:11px">${fmtRange(t.start,t.end)}</span>
-    </label>`).join('')
-    :`<div class="hint">No tasks in <b>${esc(c.name)}</b> for this outlet yet. Assign tasks to this category from the Critical Path.</div>`;
-  showModal(`<div class="mod"><div class="mod-h">
-      <h3>${esc(c.name)}</h3><span class="sub">${esc(o.name)}</span>
-      <span class="spacer"></span><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="mod-b">
-      <p class="hint" style="margin-bottom:12px">Tick the tasks that make up this milestone. The cell shows
-      the range from the earliest start to the latest finish of everything ticked.</p>${rows}</div>
-    <div class="mod-f"><button class="btn pri" id="msck_save">Apply</button>
-      <span class="spacer"></span><button class="btn" onclick="closeModal()">Cancel</button></div></div>`);
-  document.getElementById('msck_save').onclick=()=>{
-    document.querySelectorAll('[data-msck]').forEach(cb=>{
-      const t=o.tasks.find(x=>x.id===cb.dataset.msck);
-      if(t)t.ms=cb.checked;
-    });
-    markDirty(); closeModal(); render();
-  };
-}
 function launchEditor(outId){
   const o=outletOf(outId);
   showModal(`<div class="mod"><div class="mod-h"><h3>Launch date</h3>
@@ -689,16 +709,14 @@ function launchEditor(outId){
 }
 
 /* ============================== CALENDAR ============================== */
-/* Grouped mode: real categories collapse to one chip per outlet+category.
-   Tasks that don't belong to a category ('Other') always show individually. */
+/* Every category shows on the calendar. Real categories group into one chip
+   per outlet+category; tasks without a category (Other) show individually. */
 function calItemsOn(date){
   const out=[];
   DB.outlets.forEach(o=>{
     if(!UI.outlets.has(o.id)) return;
     o.tasks.forEach(t=>{
-      const c=cat(t.cat);
-      if(!c.inCalendar) return;
-      if(taskOn(o,t,date)) out.push({o,t,c});
+      if(taskOn(o,t,date)) out.push({o,t,c:cat(t.cat)});
     });
   });
   return out;
@@ -707,51 +725,23 @@ function calChips(date,limit){
   const items=calItemsOn(date);
   if(!items.length) return '';
   let entries=[];
-  if(UI.group){
-    const m=new Map();
-    items.forEach(({o,t,c})=>{
-      if(c.id==='other'){ entries.push({sort:o.name+'~'+t.name,html:
-        `<button class="chip" data-day="${date}" style="background:${o.color}">
-          <span class="cn">${esc(t.name)}</span><span class="cp">${esc(o.name)}</span></button>`}); return; }
-      const k=o.id+'|'+c.id;
-      if(!m.has(k)) m.set(k,{o,c,n:0});
-      m.get(k).n++;
-    });
-    [...m.values()].forEach(g=>entries.push({sort:g.o.name+'|'+g.c.name,html:
-      `<button class="chip" data-day="${date}" style="background:${g.o.color}">
-        <span class="cn">${esc(g.o.name)}<span class="n">${g.n}</span></span>
-        <span class="cp">${esc(g.c.name)}</span></button>`}));
-  }else{
-    items.forEach(({o,t})=>entries.push({sort:o.name+'~'+t.name,html:
+  const m=new Map();
+  items.forEach(({o,t,c})=>{
+    if(c.id==='other'){ entries.push({sort:o.name+'~'+t.name,html:
       `<button class="chip" data-day="${date}" style="background:${o.color}">
-        <span class="cn">${esc(t.name)}</span><span class="cp">${esc(o.name)}</span></button>`}));
-  }
+        <span class="cn">${esc(t.name)}</span><span class="cp">${esc(o.name)}</span></button>`}); return; }
+    const k=o.id+'|'+c.id;
+    if(!m.has(k)) m.set(k,{o,c,n:0});
+    m.get(k).n++;
+  });
+  [...m.values()].forEach(g=>entries.push({sort:g.o.name+'|'+g.c.name,html:
+    `<button class="chip" data-day="${date}" style="background:${g.o.color}">
+      <span class="cn">${esc(g.o.name)}<span class="n">${g.n}</span></span>
+      <span class="cp">${esc(g.c.name)}</span></button>`}));
   entries.sort((a,b)=>a.sort.localeCompare(b.sort));
   const show=limit?entries.slice(0,limit):entries;
   return show.map(e=>e.html).join('')
     +(limit&&entries.length>limit?`<button class="more" data-day="${date}">+${entries.length-limit} more</button>`:'');
-}
-function calFilters(){
-  return `<div class="bar">
-    <div class="seg mini">${['day','week','month'].map(m=>
-      `<button data-cal="${m}" class="${UI.calMode===m?'on':''}">${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}</div>
-    <button class="btn sm" id="calPrev">‹</button>
-    <button class="btn sm" id="calToday">Today</button>
-    <button class="btn sm" id="calNext">›</button>
-    <input type="date" id="calJump" value="${UI.calDate}">
-    <select id="calOut"><option value="__all">All outlets (${DB.outlets.length})</option>
-      ${DB.outlets.map(o=>`<option value="${o.id}" ${UI.outlets.size===1&&UI.outlets.has(o.id)?'selected':''}>${esc(o.name)}</option>`).join('')}</select>
-    <button class="btn sm ${UI.group?'on':''}" id="calGroup">${UI.group?'Grouped':'Every task'}</button>
-    <span class="spacer"></span>
-    <button class="btn sm" id="expPNG" data-t="calBody">PNG</button>
-  </div>
-  <div class="bar">
-    <div class="chips">
-      <button class="fchip on" id="calAll" style="color:var(--ink-2)"><i></i>All</button>
-      <button class="fchip on" id="calNone" style="color:var(--ink-2)"><i></i>None</button>
-      ${DB.categories.map(c=>`<button class="fchip ${c.inCalendar?'on':''}" data-calcat="${c.id}" style="color:${c.color}"><i></i>${esc(c.name)}</button>`).join('')}
-    </div>
-  </div>`;
 }
 function viewCalendar(){
   let body='',title='';
@@ -761,8 +751,16 @@ function viewCalendar(){
   const legend=DB.outlets.filter(o=>UI.outlets.has(o.id));
   return `<div class="card">
     <div class="card-h"><h2>${title}</h2>
-      <span class="sub">${legend.length} outlet${legend.length===1?'':'s'} · ${DB.categories.filter(c=>c.inCalendar).length} of ${DB.categories.length} categories</span></div>
-    ${calFilters()}
+      <span class="sub">${legend.length} outlet${legend.length===1?'':'s'}</span></div>
+    <div class="bar">
+      <div class="seg mini">${['day','week','month'].map(m=>
+        `<button data-cal="${m}" class="${UI.calMode===m?'on':''}">${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}</div>
+      <button class="btn sm" id="calPrev">‹</button>
+      <button class="btn sm" id="calToday">Today</button>
+      <button class="btn sm" id="calNext">›</button>
+      <input type="date" id="calJump" value="${UI.calDate}">
+    </div>
+    <div class="bar">${outletChips()}</div>
     <div id="calBody" data-keepscroll="cal">${body}
       ${UI.calMode!=='day'?`<div class="cal-legend">${legend.map(o=>`<span><i style="background:${o.color}"></i>${esc(o.name)}</span>`).join('')}</div>`:''}
     </div>
@@ -816,9 +814,8 @@ function calDay(){
     return `<div class="dgroup"><div class="dgroup-h"><i style="background:${g.o.color}"></i>${esc(g.o.name)}<span class="cnt">${g.items.length}</span></div>${list}</div>`;
   }).join('');
   const head=h?`<div class="note" style="margin:16px 20px 0;background:${dt.color}12;border-color:${dt.color}44;color:${darken(dt.color,.2)}">
-    <b>${esc(h.label)}</b>${dt.working?'Work continues on this day.'
-      :'Blocked programme-wide, except outlets with a works-anyway exception.'}</div>`:'';
-  return [head+`<div class="daylist">${groups||'<div class="card-b hint">Nothing scheduled on this day for the current filters.</div>'}</div>`,
+    <b>${esc(h.label)}</b>Marked day — outlets pause here unless they have a works-anyway exception.</div>`:'';
+  return [head+`<div class="daylist">${groups||'<div class="card-b hint">Nothing scheduled on this day for the selected outlets.</div>'}</div>`,
           DOW[dowOf(date)]+', '+fmtY(date)];
 }
 function dayDrill(date){
@@ -827,7 +824,7 @@ function dayDrill(date){
   const byOut=new Map();
   items.forEach(({o,t,c})=>{if(!byOut.has(o.id))byOut.set(o.id,{o,items:[]});byOut.get(o.id).items.push({t,c});});
   const body=[...byOut.values()].sort((a,b)=>a.o.name.localeCompare(b.o.name)).map(g=>
-    `<div class="out-block" style="margin-bottom:14px">
+    `<div style="margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:8px;font-weight:650;margin-bottom:6px">
         <i style="width:10px;height:10px;border-radius:3px;background:${g.o.color};display:inline-block"></i>${esc(g.o.name)}
         <span class="mono" style="color:var(--ink-3);font-weight:400;font-size:11px">${g.items.length}</span></div>
@@ -838,7 +835,7 @@ function dayDrill(date){
       <h3>${DOW[dowOf(date)]}, ${fmtY(date)}</h3><span class="spacer"></span>
       <button class="x" onclick="closeModal()">✕</button></div>
     <div class="mod-b">
-      ${h?`<div class="note"><b>${esc(h.label)}</b>${dayType(h.typeId).working?'Work continues.':'Blocked, except outlets marked works-anyway.'}</div>`:''}
+      ${h?`<div class="note"><b>${esc(h.label)}</b>Marked day — blocked except outlets with a works-anyway exception.</div>`:''}
       ${body}</div>
     <div class="mod-f"><button class="btn" id="drillDay">Open day view</button>
       <span class="spacer"></span><button class="btn" onclick="closeModal()">Done</button></div></div>`);
@@ -848,6 +845,21 @@ function dayDrill(date){
 
 <script>
 /* =========================== CRITICAL PATH =========================== */
+/* Frozen left pane: Task | Start | End | Responsible | Department
+   (+ Category and row actions when Edit is on). Everything edits inline —
+   no popup. The date header row is frozen too and carries the special-day
+   labels, so they stay visible however far you scroll. */
+function cpCols(){
+  const MOB=window.innerWidth<860;
+  if(UI.cpEdit)
+    return MOB
+      ? [['name','Task',146],['start','Start',82],['end','End',82],['act','',64]]
+      : [['name','Task',216],['start','Start',86],['end','End',86],['resp','Responsible',116],['dept','Dept',96],['cat','Category',128],['act','',88]];
+  return MOB
+    ? [['name','Task',168]]
+    : [['name','Task',236],['start','Start',74],['end','End',74],['resp','Responsible',126],['dept','Dept',100]];
+}
+
 function viewCritical(){
   const o=outletOf(UI.outlet)||DB.outlets[0];
   if(!o) return `<div class="card"><div class="card-b">
@@ -857,6 +869,13 @@ function viewCritical(){
   const [ws,we]=outletSpan(o);
   const days=range(ws,we);
   const t=today();
+  const cols=cpCols();
+  const offs=[]; let acc=0;
+  cols.forEach(c=>{offs.push(acc);acc+=c[2];});
+  const stickyW=acc;
+
+  const fixHead=cols.map((c,i)=>
+    `<th class="fc ${i===cols.length-1?'last':''}" style="left:${offs[i]}px;min-width:${c[2]}px;max-width:${c[2]}px;width:${c[2]}px">${c[1]}</th>`).join('');
 
   const head=days.map(d=>{
     const h=holidayOn(d); const dt=h?dayType(h.typeId):null;
@@ -864,46 +883,55 @@ function viewCritical(){
     const dd=s2d(d);
     return `<th class="d dh ${isWeekend(d)?'we':''} ${d===t?'today':''} ${h?'hol':''}"
       style="${h?`background:${dt.color};`:''}" data-hday="${d}"
-      title="${h?esc(h.label)+(worked?' — '+o.name+' works this day':''):'Click to mark this day'}">
+      title="${h?esc(h.label)+(worked?' — '+esc(o.name)+' works this day':'')+' · click to edit':'Click to mark a special day'}">
+      <div class="vlbl">${h?`<span style="${worked?'opacity:.55':''}">${esc(h.label)}</span>`:''}</div>
       <div class="dow">${DOW[dd.getDay()][0]}</div>
       <div class="dd">${dd.getDate()}</div>
       <div class="mo">${dd.getDate()===1||d===days[0]?MON[dd.getMonth()]:''}</div></th>`;
   }).join('');
 
-  const rows=o.tasks.map((task,i)=>{
+  const rows=o.tasks.map(task=>{
     const c=cat(task.cat);
     const act=new Set(activeDays(o,task));
     const cells=days.map(d=>{
-      const h=holidayOn(d); const dt=h?dayType(h.typeId):null;
-      const blocked=h&&!dt.working&&!(o.worksOn||[]).includes(d);
-      const worked=h&&!dt.working&&(o.worksOn||[]).includes(d);
+      const h=holidayOn(d);
+      const worked=h&&(o.worksOn||[]).includes(d);
       const on=act.has(d);
       const first=on&&!act.has(addDays(d,-1)), last=on&&!act.has(addDays(d,1));
-      /* Blocked days: full curtain with the label, exactly like the workbook.
-         Works-anyway days: faint curtain behind the bars, so the day still reads
-         as special but the work shows through. */
-      const curtain=h&&!dt.working?`<div class="holcurtain ${worked?'soft':''}" style="background:${dt.color}"></div>`:'';
-      const lbl=(h&&!dt.working&&i===0)?`<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg);font-size:9.5px;font-weight:680;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;color:${worked?dt.color:(dt.text||'#fff')};z-index:3;pointer-events:none">${esc(h.label)}</span>`:'';
+      const curtain=h?`<div class="holcurtain ${worked?'soft':''}" style="background:${dayType(h.typeId).color}"></div>`:'';
       return `<td class="d cell ${isWeekend(d)?'we':''}" data-cell="${task.id}" data-d="${d}">
-        ${curtain}${on?`<div class="gbar ${first?'s':''} ${last?'e':''} ${task.ms?'ms':''}" style="--barc:${c.color}"></div>`:''}${lbl}</td>`;
+        ${curtain}${on?`<div class="gbar ${first?'s':''} ${last?'e':''} ${task.ms?'ms':''}" style="--barc:${c.color}"></div>`:''}</td>`;
     }).join('');
-    return `<tr data-row="${task.id}">
-      <td class="lab">
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="catdot" style="background:${c.color}"></span>
-          <div style="min-width:0;flex:1">
-            <span class="tname" title="${esc(task.name)}">${task.ms?'<span class="msflag">◆</span> ':''}${esc(task.name)}</span>
-            <span class="tmeta mono">${fmt(task.start)}–${fmt(task.end)} · ${workDays(o,task)}d${task.resp?' · '+esc(task.resp.split('/')[0].trim()):''}</span>
-          </div>
-          <div class="rowbtns noprint">
-            <button class="ibtn" data-tedit="${task.id}" title="Edit">✎</button>
-            <button class="ibtn" data-tms="${task.id}" title="Milestone" style="${task.ms?'color:var(--warn)':''}">◆</button>
+
+    const fixed=cols.map((cd,i)=>{
+      const key=cd[0], left=`left:${offs[i]}px;min-width:${cd[2]}px;max-width:${cd[2]}px;width:${cd[2]}px`;
+      const last=i===cols.length-1?'last':'';
+      if(!UI.cpEdit){
+        if(key==='name') return `<td class="fc ${last}" style="${left}">
+          <span class="tname" title="${esc(task.name)}">${task.ms?'<span class="msflag">◆</span> ':''}${esc(task.name)}</span>
+          <span class="sub2"><span class="catdot" style="background:${c.color};margin-right:4px"></span>${esc(c.name)} · ${workDays(o,task)}d</span></td>`;
+        if(key==='start') return `<td class="fc mono ${last}" style="${left}">${fmt(task.start)}</td>`;
+        if(key==='end')   return `<td class="fc mono ${last}" style="${left}">${fmt(task.end)}</td>`;
+        if(key==='resp')  return `<td class="fc wrap ${last}" style="${left}">${esc(task.resp||'')}</td>`;
+        if(key==='dept')  return `<td class="fc wrap ${last}" style="${left}">${esc(task.dept||'')}</td>`;
+      }else{
+        if(key==='name') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.name)}" data-fname="${task.id}"></td>`;
+        if(key==='start')return `<td class="fc ${last}" style="${left}"><input type="date" value="${task.start}" data-fstart="${task.id}"></td>`;
+        if(key==='end')  return `<td class="fc ${last}" style="${left}"><input type="date" value="${task.end}" data-fend="${task.id}"></td>`;
+        if(key==='resp') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.resp)}" placeholder="Udara / Nisal" data-fresp="${task.id}"></td>`;
+        if(key==='dept') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.dept)}" placeholder="Projects / IT" data-fdept="${task.id}"></td>`;
+        if(key==='cat')  return `<td class="fc ${last}" style="${left}"><select data-fcat="${task.id}">
+            ${DB.categories.map(x=>`<option value="${x.id}" ${x.id===task.cat?'selected':''}>${esc(x.name)}</option>`).join('')}</select></td>`;
+        if(key==='act')  return `<td class="fc ${last}" style="${left}"><div class="rowact">
+            <button class="ibtn ${task.ms?'on':''}" data-tms="${task.id}" title="Milestone ◆">◆</button>
             <button class="ibtn" data-tup="${task.id}" title="Move up">↑</button>
             <button class="ibtn" data-tdn="${task.id}" title="Move down">↓</button>
-            <button class="ibtn del" data-tdel="${task.id}" title="Delete">✕</button>
-          </div>
-        </div>
-      </td>${cells}</tr>`;
+            <button class="ibtn" data-tdup="${task.id}" title="Duplicate">⧉</button>
+            <button class="ibtn del" data-tdel="${task.id}" title="Delete">✕</button></div></td>`;
+      }
+      return '';
+    }).join('');
+    return `<tr data-row="${task.id}">${fixed}${cells}</tr>`;
   }).join('');
 
   const sug=(DB.suggestedHolidays||[]).filter(s=>!holidayOn(s.date));
@@ -916,10 +944,9 @@ function viewCritical(){
       <select id="cpOutlet">${DB.outlets.map(x=>`<option value="${x.id}" ${x.id===o.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
       <span class="sub hidesm">${fmtY(ws)} → ${fmtY(we)}</span>
       <span class="spacer"></span>
+      <button class="btn sm ${UI.cpEdit?'on':''}" id="cpEdit">${UI.cpEdit?'Done editing':'Edit'}</button>
       <button class="btn sm pri" id="cpAdd">Add task</button>
       <button class="btn sm" id="cpToday">Today</button>
-      <button class="btn sm" id="expPNG" data-t="cpWrap">PNG</button>
-      <button class="btn sm" id="expPDF" data-t="cpWrap">PDF</button>
       <button class="btn sm dngr" id="cpDelOut">Delete outlet</button>
     </div>
     <div class="bar">
@@ -932,139 +959,75 @@ function viewCritical(){
         ${o.launch?`<div><b class="mono" style="font-size:16px;color:var(--accent)">${fmt(o.launch)}</b><span>Launch</span></div>`:''}
       </div>
       <span class="spacer"></span>
-      <span class="hint hidesm">Click a date header to mark a holiday · click a cell to extend a bar or knock a day out</span>
+      <span class="hint hidesm">${UI.cpEdit?'Edit any field in the frozen columns — changes save automatically':'Click a date header to mark a special day · click a chart cell to extend a bar or knock a day out'}</span>
     </div>
     ${worksHere.length?`<div class="card-b" style="padding:10px 20px;border-bottom:1px solid var(--line)">
       <span class="hint"><b>${esc(o.name)} works through:</b> ${worksHere.map(d=>{
         const h=holidayOn(d); return fmt(d)+' ('+esc(h.label)+')';}).join(' · ')}</span></div>`:''}
     ${sug.length?`<div class="card-b" style="padding:14px 20px 0;border-bottom:0"><div class="note">
-      <b>${sug.length} date${sug.length===1?'':'s'} look like unmarked non-working days</b>
-      Tasks pause on ${sug.slice(0,6).map(s=>fmt(s.date)).join(', ')}${sug.length>6?'…':''} across several outlets,
-      but nothing is marked. Add them as holidays and every bar recalculates.
+      <b>${sug.length} date${sug.length===1?'':'s'} in the workbook look like unmarked non-working days</b>
+      Tasks pause on ${sug.slice(0,6).map(s=>fmt(s.date)).join(', ')}${sug.length>6?'…':''} across several
+      outlets, but no holiday text was written there in Excel. If these were real non-working days, add
+      them and every bar recalculates; if the pauses were intentional, dismiss this.
       <div style="margin-top:8px"><button class="btn sm" id="cpAddSug">Add all as non-working days</button>
       <button class="btn sm ghost" id="cpDismissSug">Dismiss</button></div></div></div>`:''}
-    <div class="gantt" id="cpWrap" data-keepscroll="cp">
-      <table class="gt"><thead><tr><th class="lab">Task <span style="color:var(--ink-3);font-weight:400">(${o.tasks.length})</span></th>${head}</tr></thead>
-      <tbody>${rows||`<tr><td class="lab" colspan="99" style="padding:20px">No tasks yet — use <b>Add task</b>.</td></tr>`}</tbody></table>
+    <div class="gantt" id="cpWrap" data-keepscroll="cp" data-stickyw="${stickyW}">
+      <table class="gt" id="gtb"><thead><tr>${fixHead}${head}</tr></thead>
+      <tbody>${rows||`<tr><td class="fc" colspan="99" style="padding:20px;position:static">No tasks yet — use <b>Add task</b>.</td></tr>`}</tbody></table>
     </div>
   </div>`;
 }
 
-/* ------------------------- task editor ------------------------- */
-function editTask(outId,taskId){
-  const o=outletOf(outId);
-  const t=taskId?o.tasks.find(x=>x.id===taskId):{
-    id:uid('t'),name:'',start:today(),end:today(),skip:[],resp:'',dept:'',cat:'other',ms:false,done:null};
-  const isNew=!taskId;
-  showModal(`<div class="mod"><div class="mod-h">
-      <h3>${isNew?'Add task':'Edit task'}</h3>
-      <span class="sub">${esc(o.name)}</span><span class="spacer"></span>
-      <button class="x" onclick="closeModal()">✕</button></div>
-    <div class="mod-b">
-      <div class="fld"><label>Task name</label>
-        <input type="text" id="f_name" value="${esc(t.name)}" placeholder="e.g. Backwall Fitouts (SS | Furniture | Graphics)"></div>
-      <div class="grid2">
-        <div class="fld"><label>Start date</label><input type="date" id="f_start" value="${t.start}"></div>
-        <div class="fld"><label>End date</label><input type="date" id="f_end" value="${t.end}"></div>
-      </div>
-      <div class="grid2">
-        <div class="fld"><label>Responsibility</label><input type="text" id="f_resp" value="${esc(t.resp)}" placeholder="Udara / Nisal"></div>
-        <div class="fld"><label>Department</label><input type="text" id="f_dept" value="${esc(t.dept)}" placeholder="Projects / IT"></div>
-      </div>
-      <div class="grid2">
-        <div class="fld"><label>Category</label><select id="f_cat">
-          ${DB.categories.map(c=>`<option value="${c.id}" ${c.id===t.cat?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
-        <div class="fld"><label>Progress %</label><input type="number" id="f_done" min="0" max="100" step="5" value="${t.done==null?'':t.done}" placeholder="—"></div>
-      </div>
-      <div class="fld"><label class="cbrow"><input type="checkbox" id="f_ms" ${t.ms?'checked':''}> Count this task in the milestone for its category</label></div>
-      ${(t.skip||[]).length?`<div class="fld"><label>Days knocked out of this task</label>
-        <div class="chips">${t.skip.map(d=>`<button class="fchip on" data-unskip="${d}" style="color:var(--danger)"><i></i>${fmt(d)} ✕</button>`).join('')}</div>
-        <div class="hint">Inside the range but not worked. Click to put a day back.</div></div>`:''}
-      <div class="hint">Working days = start to end, less programme holidays this outlet observes, less the days above.</div>
-    </div>
-    <div class="mod-f">
-      <button class="btn pri" id="f_save">${isNew?'Add task':'Save changes'}</button>
-      ${isNew?'':'<button class="btn" id="f_dup">Duplicate</button>'}
-      ${isNew?'':'<button class="btn" id="f_up" title="Move up">↑</button><button class="btn" id="f_dn" title="Move down">↓</button>'}
-      <span class="spacer"></span>
-      ${isNew?'':'<button class="btn dngr" id="f_del">Delete</button>'}
-      <button class="btn" onclick="closeModal()">Cancel</button>
-    </div></div>`);
-
-  const read=()=>{
-    const v=id=>document.getElementById(id).value;
-    let s=v('f_start'),e=v('f_end');
-    if(e<s)[s,e]=[e,s];
-    return {...t,name:v('f_name').trim()||'Untitled task',start:s,end:e,
-      resp:v('f_resp').trim(),dept:v('f_dept').trim(),cat:v('f_cat'),
-      ms:document.getElementById('f_ms').checked,
-      done:v('f_done')===''?null:Math.max(0,Math.min(100,+v('f_done'))),
-      skip:(t.skip||[]).filter(d=>d>=s&&d<=e)};
-  };
-  document.getElementById('f_save').onclick=()=>{
-    const n=read();
-    if(isNew)o.tasks.push(n);else Object.assign(t,n);
-    markDirty(); closeModal(); render();
-  };
-  document.getElementById('f_dup')?.addEventListener('click',()=>{
-    const n={...read(),id:uid('t'),name:read().name+' (copy)'};
-    o.tasks.splice(o.tasks.indexOf(t)+1,0,n); markDirty(); closeModal(); render();
-  });
-  const shift=d=>{
-    const i=o.tasks.indexOf(t),j=i+d;
-    if(j<0||j>=o.tasks.length)return;
-    [o.tasks[i],o.tasks[j]]=[o.tasks[j],o.tasks[i]];
-    markDirty(); closeModal(); render();
-  };
-  document.getElementById('f_up')?.addEventListener('click',()=>shift(-1));
-  document.getElementById('f_dn')?.addEventListener('click',()=>shift(1));
-  document.getElementById('f_del')?.addEventListener('click',()=>{
-    if(!confirm('Delete "'+t.name+'"?'))return;
-    o.tasks=o.tasks.filter(x=>x.id!==t.id); markDirty(); closeModal(); render();
-  });
-  document.querySelectorAll('[data-unskip]').forEach(b=>b.onclick=()=>{
-    t.skip=t.skip.filter(d=>d!==b.dataset.unskip); markDirty(); editTask(outId,taskId);
-  });
-}
-
-/* ------------------------- holiday editor ------------------------- */
-/* One programme calendar for everyone; per-outlet works-anyway exceptions. */
+/* ------------------------- special-day editor ------------------------- */
+/* One programme-wide calendar; days can be marked singly or as a range.
+   Work may still continue at specific outlets via the works-anyway tick. */
 function editHoliday(outId,date){
   const o=outId?outletOf(outId):null;
   const cur=holidayOn(date);
   const works=o&&(o.worksOn||[]).includes(date);
   showModal(`<div class="mod"><div class="mod-h">
-      <h3>${DOW[dowOf(date)]}, ${fmtY(date)}</h3><span class="spacer"></span>
+      <h3>${cur?'Edit special day':'Mark a special day'}</h3>
+      <span class="sub">${DOW[dowOf(date)]}, ${fmtY(date)}</span>
+      <span class="spacer"></span>
       <button class="x" onclick="closeModal()">✕</button></div>
     <div class="mod-b">
       <div class="fld"><label>Label shown on the chart</label>
         <input type="text" id="h_label" value="${esc(cur?cur.label:'')}" placeholder="POYA DAY"></div>
-      <div class="fld"><label>Day type</label><select id="h_type">
-        ${DB.dayTypes.map(dt=>`<option value="${dt.id}" ${cur&&cur.typeId===dt.id?'selected':''}>${esc(dt.name)}${dt.working?' — work continues':' — no work'}</option>`).join('')}</select></div>
-      <div class="note blue"><b>Applies to every outlet.</b>Marking this day puts it on the programme
-        calendar — all outlets pause here and their bars recalculate.</div>
+      <div class="grid2">
+        <div class="fld"><label>Day type</label><select id="h_type">
+          ${DB.dayTypes.map(dt=>`<option value="${dt.id}" ${cur&&cur.typeId===dt.id?'selected':''}>${esc(dt.name)}</option>`).join('')}</select></div>
+        <div class="fld"><label>Until (optional, for multi-day)</label>
+          <input type="date" id="h_until" value="" min="${date}"></div>
+      </div>
+      <div class="note blue"><b>Applies to every outlet.</b>Marked days pause work programme-wide and
+        every bar recalculates. Leave “Until” empty to mark just this one day.</div>
       ${o?`<div class="fld"><label class="cbrow"><input type="checkbox" id="h_works" ${works?'checked':''}>
-        ${esc(o.name)} works on this day anyway</label>
-        <div class="hint">The exception applies only to this outlet. On the chart the day stays tinted, with the bars showing through.</div></div>`:''}
+        Work carries on at ${esc(o.name)} on ${cur?'this day':'these days'}</label>
+        <div class="hint">Only this outlet. The day stays tinted on its chart, with the bars showing through.</div></div>`:''}
     </div>
     <div class="mod-f">
-      <button class="btn pri" id="h_save">${cur?'Save':'Mark this day'}</button>
+      <button class="btn pri" id="h_save">${cur?'Save':'Mark'}</button>
       <span class="spacer"></span>
-      ${cur?'<button class="btn dngr" id="h_clear">Remove from calendar</button>':''}
+      ${cur?'<button class="btn dngr" id="h_clear">Remove this day</button>':''}
       <button class="btn" onclick="closeModal()">Cancel</button>
     </div></div>`);
 
   document.getElementById('h_save').onclick=()=>{
     const label=document.getElementById('h_label').value.trim()||'Non-working day';
     const typeId=document.getElementById('h_type').value;
-    DB.holidays=DB.holidays.filter(h=>h.date!==date);
-    DB.holidays.push({date,label,typeId});
+    const until=document.getElementById('h_until').value;
+    const dates=until&&until>date?range(date,until):[date];
+    const w=document.getElementById('h_works')?.checked;
+    dates.forEach(d=>{
+      DB.holidays=DB.holidays.filter(x=>x.date!==d);
+      DB.holidays.push({date:d,label,typeId});
+      if(o){
+        o.worksOn=(o.worksOn||[]).filter(x=>x!==d);
+        if(w)o.worksOn.push(d);
+      }
+    });
+    if(o)o.worksOn.sort();
     DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
-    if(o){
-      const w=document.getElementById('h_works')?.checked;
-      o.worksOn=(o.worksOn||[]).filter(d=>d!==date);
-      if(w)o.worksOn.push(date), o.worksOn.sort();
-    }
     markDirty(); closeModal(); render();
   };
   document.getElementById('h_clear')?.addEventListener('click',()=>{
@@ -1092,10 +1055,39 @@ function cellClick(taskId,date){
   }
   markDirty(); render();
 }
+
+/* -------- vertical scroll auto-pans horizontally to the visible tasks -------- */
+function cpAttachAutoPan(){
+  const w=document.getElementById('cpWrap');
+  if(!w)return;
+  const o=outletOf(UI.outlet); if(!o)return;
+  const [ws]=outletSpan(o);
+  const stickyW=+w.dataset.stickyw||0;
+  let lastTop=w.scrollTop;
+  w.addEventListener('scroll',()=>{
+    const dv=w.scrollTop-lastTop; lastTop=w.scrollTop;
+    if(!dv)return;                      // purely horizontal — leave it alone
+    clearTimeout(w._pan);
+    w._pan=setTimeout(()=>{
+      const dh=w.querySelector('th.d.dh'); if(!dh)return;
+      const cellW=dh.offsetWidth;
+      const headH=w.querySelector('thead').offsetHeight;
+      const rows=[...w.querySelectorAll('tbody tr[data-row]')];
+      const top=rows.find(r=>r.offsetTop+r.offsetHeight>w.scrollTop+headH);
+      if(!top)return;
+      const t=o.tasks.find(x=>x.id===top.dataset.row); if(!t)return;
+      const idx=Math.max(0,diffDays(ws,t.start));
+      const barL=stickyW+idx*cellW;
+      const viewL=w.scrollLeft+stickyW, viewR=w.scrollLeft+w.clientWidth;
+      if(barL<viewL||barL>viewR-cellW*3)
+        w.scrollTo({left:Math.max(0,barL-stickyW-cellW*2),behavior:'smooth'});
+    },200);
+  });
+}
 </script>
 
 <script>
-/* ===================== SETUP: categories, day types, calendar, outlets ===================== */
+/* ===================== SETUP: categories, day types, outlets, backup ===================== */
 function viewManage(){
   const catRows=DB.categories.map(c=>{
     const n=DB.outlets.reduce((a,o)=>a+o.tasks.filter(t=>t.cat===c.id).length,0);
@@ -1104,81 +1096,64 @@ function viewManage(){
       <td><input type="color" value="${c.color}" data-ccol="${c.id}"></td>
       <td><input type="text" value="${esc(c.name)}" data-cname="${c.id}" style="width:100%;min-width:170px"></td>
       <td class="mono">${n}</td><td class="mono">${m}</td>
-      <td><label class="cbrow"><input type="checkbox" data-cms="${c.id}" ${c.inMilestones?'checked':''}> Matrix</label></td>
-      <td><label class="cbrow"><input type="checkbox" data-ccal="${c.id}" ${c.inCalendar?'checked':''}> Calendar</label></td>
+      <td><label class="cbrow"><input type="checkbox" data-cms="${c.id}" ${c.inMilestones?'checked':''}> Show</label></td>
       <td><button class="ibtn del" data-cdel="${c.id}" title="Delete">✕</button></td>
     </tr>`;}).join('');
 
   const dtRows=DB.dayTypes.map(d=>`<tr>
       <td><input type="color" value="${d.color}" data-dcol="${d.id}"></td>
       <td><input type="text" value="${esc(d.name)}" data-dname="${d.id}" style="width:100%;min-width:160px"></td>
-      <td><label class="cbrow"><input type="checkbox" data-dwork="${d.id}" ${d.working?'checked':''}> Work continues</label></td>
       <td class="mono">${DB.holidays.filter(h=>h.typeId===d.id).length}</td>
       <td><button class="ibtn del" data-ddel="${d.id}">✕</button></td>
     </tr>`).join('');
 
-  const hols=[...DB.holidays].sort((a,b)=>a.date.localeCompare(b.date));
-  const holRows=hols.map(h=>{
-    const dt=dayType(h.typeId);
-    const exc=DB.outlets.filter(o=>(o.worksOn||[]).includes(h.date));
-    return `<tr>
-      <td class="mono" style="white-space:nowrap">${fmtY(h.date)}<div class="tmeta">${DOW[dowOf(h.date)]}</div></td>
-      <td><input type="text" value="${esc(h.label)}" data-hlbl="${h.date}" style="width:100%;min-width:180px"></td>
-      <td><select data-htype="${h.date}">${DB.dayTypes.map(x=>`<option value="${x.id}" ${x.id===h.typeId?'selected':''}>${esc(x.name)}</option>`).join('')}</select></td>
-      <td style="font-size:11.5px;color:var(--ink-2)">${dt.working?'Work continues everywhere'
-        :exc.length?`Blocked, except: ${exc.map(o=>esc(o.name)).join(', ')}`:'Blocked for every outlet'}</td>
-      <td><button class="ibtn del" data-hdel="${h.date}">✕</button></td>
-    </tr>`;}).join('');
-
-  const olRows=DB.outlets.map(o=>{
+  const oCards=DB.outlets.map(o=>{
     const [s,e]=outletSpan(o);
-    return `<tr>
-      <td><input type="color" value="${o.color}" data-ocol="${o.id}"></td>
-      <td><input type="text" value="${esc(o.name)}" data-oname="${o.id}" style="width:100%;min-width:150px"></td>
-      <td class="mono">${o.tasks.length}</td>
-      <td class="mono">${o.tasks.filter(t=>t.ms).length}</td>
-      <td class="mono" style="white-space:nowrap">${fmt(s)} – ${fmt(e)}</td>
-      <td class="mono">${(o.worksOn||[]).length}</td>
-      <td><button class="ibtn del" data-odel="${o.id}">✕</button></td>
-    </tr>`;}).join('');
+    const w=(o.worksOn||[]).filter(d=>holidayOn(d)).length;
+    return `<div class="ocard">
+      <div class="orow">
+        <input type="color" value="${o.color}" data-ocol="${o.id}" title="Outlet colour">
+        <input type="text" value="${esc(o.name)}" data-oname="${o.id}">
+        <button class="ibtn del" data-odel="${o.id}" title="Delete outlet">✕</button>
+      </div>
+      <div class="ometa">${o.tasks.length} tasks · ${o.tasks.filter(t=>t.ms).length} ◆ milestones<br>
+        ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}${w?'<br>works through '+w+' special day'+(w===1?'':'s'):''}</div>
+    </div>`;}).join('');
 
   return `
   <div class="card">
     <div class="card-h"><h2>Categories</h2>
-      <span class="sub">Work packages — each becomes one row of the milestone matrix</span><span class="spacer"></span>
+      <span class="sub">Work packages — pick which ones appear as rows of the milestone matrix</span><span class="spacer"></span>
       <button class="btn sm pri" id="catAdd">Add category</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
-      <th></th><th>Name</th><th>Tasks</th><th>Flagged</th><th>Matrix</th><th>Calendar</th><th></th></tr></thead>
+      <th></th><th>Name</th><th>Tasks</th><th>Flagged ◆</th><th>In matrix</th><th></th></tr></thead>
       <tbody>${catRows}</tbody></table></div>
-    <div class="card-b hint">Switching a category off hides it — nothing is deleted. Deleting one moves its tasks to <b>Other</b>. Tasks in Other always show individually on the calendar.</div>
+    <div class="card-b hint">Every category always shows on the calendar. Deleting one moves its tasks to <b>Other</b>; Other tasks appear individually on the calendar.</div>
   </div>
 
   <div class="card">
     <div class="card-h"><h2>Day types</h2>
-      <span class="sub">How a marked day is drawn, and whether work counts</span><span class="spacer"></span>
+      <span class="sub">The colours used when you mark special days on the Critical Path</span><span class="spacer"></span>
       <button class="btn sm pri" id="dtAdd">Add day type</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
-      <th></th><th>Name</th><th>Behaviour</th><th>Days marked</th><th></th></tr></thead>
+      <th></th><th>Name</th><th>Days marked</th><th></th></tr></thead>
       <tbody>${dtRows}</tbody></table></div>
+    <div class="card-b hint">To mark days, click any date header on the Critical Path — one day or a range,
+      with an optional works-anyway exception per outlet. Marked days apply to every outlet.</div>
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Programme calendar</h2>
-      <span class="sub">${hols.length} day${hols.length===1?'':'s'} marked — every holiday applies to all outlets</span><span class="spacer"></span>
-      <input type="date" id="holNewDate" value="${today()}">
-      <button class="btn sm pri" id="holAdd">Mark a day</button></div>
-    <div class="scroll" style="max-height:420px"><table class="tbl"><thead><tr>
-      <th>Date</th><th>Label</th><th>Type</th><th>Effect</th><th></th></tr></thead>
-      <tbody>${holRows||'<tr><td colspan="5" class="hint" style="padding:14px">No days marked yet.</td></tr>'}</tbody></table></div>
-    <div class="card-b hint">To let one outlet work through a holiday, open that outlet's Critical Path,
-      click the date's header, and tick <b>works on this day anyway</b>.</div>
+    <div class="card-h"><h2>Outlets</h2><span class="sub">${DB.outlets.length} in the programme — rename, recolour, or remove</span></div>
+    <div class="ogrid">${oCards}</div>
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Outlets</h2><span class="sub">${DB.outlets.length} in the programme</span></div>
-    <div class="scroll"><table class="tbl"><thead><tr>
-      <th></th><th>Name</th><th>Tasks</th><th>Flagged</th><th>Window</th><th>Works-on days</th><th></th></tr></thead>
-      <tbody>${olRows}</tbody></table></div>
+    <div class="card-h"><h2>Backup</h2><span class="sub">A safety copy of everything, since anyone with the link can edit</span></div>
+    <div class="card-b" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn" id="bkDown">Download backup</button>
+      <button class="btn" id="bkUp">Restore from a backup file</button>
+      <span class="hint">Restoring replaces the live data for everyone.</span>
+    </div>
   </div>`;
 }
 
@@ -1270,7 +1245,7 @@ function finaliseImport(imported){
     });
   });
   DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
-  const blockedDates=DB.holidays.filter(h=>!dayType(h.typeId).working).map(h=>h.date);
+  const blockedDates=DB.holidays.map(h=>h.date);
   imported.forEach(o=>{
     const worked=new Set();
     o.tasks.forEach(t=>t._on.forEach(d=>worked.add(d)));
@@ -1341,21 +1316,50 @@ function exportJSON(){
   delete out._localAt;delete out._stale;
   const b=new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);a.download='data.json';a.click();
+  a.href=URL.createObjectURL(b);a.download='moonshot-backup-'+today()+'.json';a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-  toast('Commit this next to index.html to publish it');
+  toast('Backup saved to your computer');
 }
-async function exportImage(targetId,pdf){
-  const el=document.getElementById(targetId);
-  if(!el){toast('Nothing to export');return;}
-  toast('Rendering…');
-  const prevH=el.style.maxHeight,prevO=el.style.overflow;
-  el.style.maxHeight='none';el.style.overflow='visible';
+
+/* One Export button for every page — always captures the WHOLE table, not
+   just the visible part: sticky panes are flattened and scroll containers
+   opened up for the duration of the capture. */
+function exportTarget(){
+  if(UI.view==='milestones')return {el:document.getElementById('msSlide'),name:'milestone-matrix'};
+  if(UI.view==='calendar')  return {el:document.getElementById('calBody'),name:'calendar'};
+  if(UI.view==='critical')  return {el:document.getElementById('gtb'),name:'critical-path-'+UI.outlet};
+  return null;
+}
+function exportMenu(){
+  const t=exportTarget();
+  if(!t||!t.el){toast('Open Milestones, Calendar or Critical Path to export');return;}
+  showModal(`<div class="mod" style="width:min(380px,100%)">
+    <div class="mod-h"><h3>Export</h3>
+      <span class="sub">${UI.view==='critical'?esc(outletOf(UI.outlet)?.name||''):UI.view}</span>
+      <span class="spacer"></span><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mod-b"><p class="hint" style="margin-bottom:12px">Exports the complete table — including
+      the parts that are scrolled out of view.</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn pri" id="ex_png" style="flex:1">PNG image</button>
+        <button class="btn" id="ex_pdf" style="flex:1">PDF</button>
+      </div></div></div>`);
+  document.getElementById('ex_png').onclick=()=>{closeModal();exportImage(false);};
+  document.getElementById('ex_pdf').onclick=()=>{closeModal();exportImage(true);};
+}
+async function exportImage(pdf){
+  const t=exportTarget();
+  if(!t||!t.el){toast('Nothing to export');return;}
+  const el=t.el;
+  toast('Rendering the full table…');
+  document.body.classList.add('exporting');
+  const prevW=el.style.width;
+  await new Promise(r=>setTimeout(r,60));   // let layout settle without sticky
   try{
-    const w=el.scrollWidth+40;
-    const scale=Math.max(1,Math.min(2,3600/w));
-    const canvas=await html2canvas(el,{scale,backgroundColor:'#ffffff',windowWidth:w});
-    const name='moonshot-'+UI.view+'-'+today();
+    const w=el.scrollWidth, hgt=el.scrollHeight;
+    el.style.width=w+'px';
+    const scale=Math.max(1,Math.min(2,4200/w));
+    const canvas=await html2canvas(el,{scale,backgroundColor:'#ffffff',windowWidth:w+80,windowHeight:hgt+80});
+    const name='moonshot-'+t.name+'-'+today();
     if(pdf){
       const {jsPDF}=window.jspdf;
       const land=canvas.width>canvas.height;
@@ -1369,7 +1373,8 @@ async function exportImage(targetId,pdf){
       a.href=canvas.toDataURL('image/png');a.download=name+'.png';a.click();
     }
   }catch(e){toast('Export failed: '+e.message);}
-  el.style.maxHeight=prevH;el.style.overflow=prevO;
+  el.style.width=prevW;
+  document.body.classList.remove('exporting');
 }
 </script>
 
@@ -1382,19 +1387,20 @@ function wire(){
   // tabs
   document.querySelectorAll('#tabs [data-v]').forEach(b=>b.onclick=()=>{UI.view=b.dataset.v;render();});
 
-  // exports
-  document.querySelectorAll('#expPNG').forEach(b=>b.onclick=()=>exportImage(b.dataset.t,false));
-  document.querySelectorAll('#expPDF').forEach(b=>b.onclick=()=>exportImage(b.dataset.t,true));
+  /* ---- shared outlet picker ---- */
+  on('outAll',()=>{UI.outlets=new Set(DB.outlets.map(o=>o.id));render();});
+  on('outNone',()=>{UI.outlets=new Set();render();});
+  document.querySelectorAll('[data-outsel]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.outsel;
+    if(UI.outlets.has(id))UI.outlets.delete(id);else UI.outlets.add(id);
+    render();
+  });
 
   /* ---- milestones ---- */
   document.querySelectorAll('[data-mscat]').forEach(b=>b.onclick=()=>{
     const c=cat(b.dataset.mscat); c.inMilestones=!c.inMilestones; markDirty(); render();
   });
   on('msStrike',()=>{UI.strike=!UI.strike;render();});
-  on('msEdit',()=>{UI.msEdit=!UI.msEdit;render();});
-  document.querySelectorAll('[data-mspick]').forEach(el=>el.onclick=()=>{
-    const [oid,cid]=el.dataset.mspick.split('|'); msCellEditor(oid,cid);
-  });
   document.querySelectorAll('[data-launch]').forEach(el=>el.onclick=()=>launchEditor(el.dataset.launch));
 
   /* ---- calendar ---- */
@@ -1407,29 +1413,27 @@ function wire(){
   on('calPrev',()=>step(-1)); on('calNext',()=>step(1));
   on('calToday',()=>{UI.calDate=today();render();});
   const cj=$('calJump'); if(cj)cj.onchange=()=>{if(cj.value){UI.calDate=cj.value;render();}};
-  const co=$('calOut'); if(co)co.onchange=()=>{
-    UI.outlets=co.value==='__all'?new Set(DB.outlets.map(o=>o.id)):new Set([co.value]); render();
-  };
-  on('calGroup',()=>{UI.group=!UI.group;render();});
-  on('calAll',()=>{DB.categories.forEach(c=>c.inCalendar=true);markDirty();render();});
-  on('calNone',()=>{DB.categories.forEach(c=>c.inCalendar=false);markDirty();render();});
-  document.querySelectorAll('[data-calcat]').forEach(b=>b.onclick=()=>{
-    const c=cat(b.dataset.calcat); c.inCalendar=!c.inCalendar; markDirty(); render();
-  });
   document.querySelectorAll('.chip[data-day],.more[data-day]').forEach(b=>b.onclick=()=>dayDrill(b.dataset.day));
 
   /* ---- critical path ---- */
   const cpo=$('cpOutlet'); if(cpo)cpo.onchange=()=>{UI.outlet=cpo.value;render();};
-  on('cpAdd',()=>editTask(UI.outlet,null));
+  on('cpEdit',()=>{UI.cpEdit=!UI.cpEdit;render();});
+  on('cpAdd',()=>{
+    const o=outletOf(UI.outlet); if(!o)return;
+    const [ws]=outletSpan(o);
+    o.tasks.push({id:uid('t'),name:'New task',start:ws,end:ws,skip:[],resp:'',dept:'',cat:'other',ms:false,done:null});
+    UI.cpEdit=true; markDirty(); render();
+    const w=$('cpWrap'); if(w)w.scrollTop=w.scrollHeight;
+  });
   on('btnImport2',()=>$('fileXl').click());
   on('cpToday',()=>{
     const el=document.querySelector(`[data-hday="${today()}"]`);
     if(el)el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-    else toast('Today is outside this outlet\'s window');
+    else toast("Today is outside this outlet's window");
   });
-  on('cpDelOut',()=>{
-    const o=outletOf(UI.outlet);
-    if(!o||!confirm('Delete "'+o.name+'" and its '+o.tasks.length+' tasks?'))return;
+  on('cpDelOut',async()=>{
+    const o=outletOf(UI.outlet); if(!o)return;
+    if(!await uiConfirm(`Delete <b>${esc(o.name)}</b> and its ${o.tasks.length} tasks?`,{title:'Delete outlet',ok:'Delete',danger:true}))return;
     DB.outlets=DB.outlets.filter(x=>x.id!==o.id);
     UI.outlets.delete(o.id);
     UI.outlet=DB.outlets[0]?.id||null;
@@ -1447,70 +1451,74 @@ function wire(){
   on('cpDismissSug',()=>{DB.suggestedHolidays=[];markDirty();render();});
   document.querySelectorAll('[data-hday]').forEach(el=>el.onclick=()=>editHoliday(UI.outlet,el.dataset.hday));
   document.querySelectorAll('[data-cell]').forEach(el=>el.onclick=()=>cellClick(el.dataset.cell,el.dataset.d));
-  document.querySelectorAll('[data-tedit]').forEach(b=>b.onclick=e=>{e.stopPropagation();editTask(UI.outlet,b.dataset.tedit);});
-  document.querySelectorAll('[data-tms]').forEach(b=>b.onclick=e=>{
-    e.stopPropagation();
-    const o=outletOf(UI.outlet),t=o.tasks.find(x=>x.id===b.dataset.tms);
-    if(t){t.ms=!t.ms;markDirty();render();}
+
+  // inline editing (Edit mode)
+  const task=id=>{const o=outletOf(UI.outlet);return o&&o.tasks.find(x=>x.id===id);};
+  const bindF=(sel,fn,rerender)=>document.querySelectorAll(sel).forEach(inp=>inp.onchange=()=>{
+    const t=task(inp.dataset.fname||inp.dataset.fstart||inp.dataset.fend||inp.dataset.fresp||inp.dataset.fdept||inp.dataset.fcat);
+    if(!t)return; fn(t,inp.value); markDirty(); if(rerender)render();
   });
-  document.querySelectorAll('[data-tup]').forEach(b=>b.onclick=e=>{e.stopPropagation();moveTask(b.dataset.tup,-1);});
-  document.querySelectorAll('[data-tdn]').forEach(b=>b.onclick=e=>{e.stopPropagation();moveTask(b.dataset.tdn,1);});
-  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=e=>{
-    e.stopPropagation();
-    const o=outletOf(UI.outlet),t=o.tasks.find(x=>x.id===b.dataset.tdel);
-    if(t&&confirm('Delete "'+t.name+'"?')){o.tasks=o.tasks.filter(x=>x!==t);markDirty();render();}
+  bindF('[data-fname]',(t,v)=>{t.name=v.trim()||'Untitled task';},false);
+  bindF('[data-fstart]',(t,v)=>{
+    if(!v)return; t.start=v; if(t.end<t.start)t.end=t.start;
+    t.skip=(t.skip||[]).filter(d=>d>=t.start&&d<=t.end);
+  },true);
+  bindF('[data-fend]',(t,v)=>{
+    if(!v)return; t.end=v; if(t.end<t.start)t.start=t.end;
+    t.skip=(t.skip||[]).filter(d=>d>=t.start&&d<=t.end);
+  },true);
+  bindF('[data-fresp]',(t,v)=>{t.resp=v.trim();},false);
+  bindF('[data-fdept]',(t,v)=>{t.dept=v.trim();},false);
+  bindF('[data-fcat]',(t,v)=>{t.cat=v;},true);
+  document.querySelectorAll('[data-tms]').forEach(b=>b.onclick=()=>{
+    const t=task(b.dataset.tms); if(t){t.ms=!t.ms;markDirty();render();}
   });
+  document.querySelectorAll('[data-tup]').forEach(b=>b.onclick=()=>moveTask(b.dataset.tup,-1));
+  document.querySelectorAll('[data-tdn]').forEach(b=>b.onclick=()=>moveTask(b.dataset.tdn,1));
+  document.querySelectorAll('[data-tdup]').forEach(b=>b.onclick=()=>{
+    const o=outletOf(UI.outlet), t=task(b.dataset.tdup); if(!t)return;
+    o.tasks.splice(o.tasks.indexOf(t)+1,0,{...JSON.parse(JSON.stringify(t)),id:uid('t'),name:t.name+' (copy)'});
+    markDirty(); render();
+  });
+  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=async()=>{
+    const o=outletOf(UI.outlet), t=task(b.dataset.tdel); if(!t)return;
+    if(!await uiConfirm(`Delete “${esc(t.name)}”?`,{title:'Delete task',ok:'Delete',danger:true}))return;
+    o.tasks=o.tasks.filter(x=>x!==t); markDirty(); render();
+  });
+  cpAttachAutoPan();
 
   /* ---- setup ---- */
-  on('catAdd',()=>{
-    const name=prompt('Category name?');
+  on('catAdd',async()=>{
+    const name=await uiPrompt('',{title:'Add category',placeholder:'e.g. Signage Works'});
     if(!name)return;
-    DB.categories.push({id:uid('c'),name:name.trim(),color:'#5856D6',inMilestones:true,inCalendar:true});
+    DB.categories.push({id:uid('c'),name,color:'#5856D6',inMilestones:true,inCalendar:true});
     markDirty(); render();
   });
   document.querySelectorAll('[data-ccol]').forEach(i=>i.onchange=()=>{cat(i.dataset.ccol).color=i.value;markDirty();render();});
   document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{cat(i.dataset.cname).name=i.value.trim()||'Category';markDirty();render();});
   document.querySelectorAll('[data-cms]').forEach(i=>i.onchange=()=>{cat(i.dataset.cms).inMilestones=i.checked;markDirty();render();});
-  document.querySelectorAll('[data-ccal]').forEach(i=>i.onchange=()=>{cat(i.dataset.ccal).inCalendar=i.checked;markDirty();render();});
-  document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=async()=>{
     const c=cat(b.dataset.cdel);
-    if(c.id==='other'){toast('"Other" is the fallback category and can\'t be deleted');return;}
-    if(!confirm('Delete "'+c.name+'"? Its tasks move to Other.'))return;
+    if(c.id==='other'){toast('“Other” is the fallback category and can’t be deleted');return;}
+    if(!await uiConfirm(`Delete <b>${esc(c.name)}</b>? Its tasks move to Other.`,{title:'Delete category',ok:'Delete',danger:true}))return;
     DB.outlets.forEach(o=>o.tasks.forEach(t=>{if(t.cat===c.id)t.cat='other';}));
     DB.categories=DB.categories.filter(x=>x.id!==c.id);
     markDirty(); render();
   });
 
-  on('dtAdd',()=>{
-    const name=prompt('Day type name?');
+  on('dtAdd',async()=>{
+    const name=await uiPrompt('',{title:'Add day type',placeholder:'e.g. Stock Count'});
     if(!name)return;
-    DB.dayTypes.push({id:uid('d'),name:name.trim(),color:'#607D8B',text:'#ffffff',working:false});
+    DB.dayTypes.push({id:uid('d'),name,color:'#607D8B',text:'#ffffff'});
     markDirty(); render();
   });
   document.querySelectorAll('[data-dcol]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dcol).color=i.value;markDirty();render();});
   document.querySelectorAll('[data-dname]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dname).name=i.value.trim()||'Day type';markDirty();render();});
-  document.querySelectorAll('[data-dwork]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dwork).working=i.checked;markDirty();render();});
-  document.querySelectorAll('[data-ddel]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('[data-ddel]').forEach(b=>b.onclick=async()=>{
     const d=dayType(b.dataset.ddel);
     const used=DB.holidays.filter(h=>h.typeId===d.id).length;
-    if(used&&!confirm(used+' marked day(s) use "'+d.name+'". They will fall back to the first type. Delete?'))return;
+    if(used&&!await uiConfirm(`${used} marked day${used===1?'':'s'} use <b>${esc(d.name)}</b> — they will fall back to the first type. Delete it?`,{title:'Delete day type',ok:'Delete',danger:true}))return;
     DB.dayTypes=DB.dayTypes.filter(x=>x.id!==d.id);
-    markDirty(); render();
-  });
-
-  on('holAdd',()=>{
-    const date=$('holNewDate').value;
-    if(date)editHoliday(null,date);
-  });
-  document.querySelectorAll('[data-hlbl]').forEach(i=>i.onchange=()=>{
-    const h=holidayOn(i.dataset.hlbl); if(h){h.label=i.value.trim()||'Non-working day';markDirty();render();}
-  });
-  document.querySelectorAll('[data-htype]').forEach(s=>s.onchange=()=>{
-    const h=holidayOn(s.dataset.htype); if(h){h.typeId=s.value;markDirty();render();}
-  });
-  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{
-    DB.holidays=DB.holidays.filter(h=>h.date!==b.dataset.hdel);
-    DB.outlets.forEach(o=>o.worksOn=(o.worksOn||[]).filter(d=>d!==b.dataset.hdel));
     markDirty(); render();
   });
 
@@ -1520,32 +1528,37 @@ function wire(){
   document.querySelectorAll('[data-oname]').forEach(i=>i.onchange=()=>{
     const o=outletOf(i.dataset.oname); if(o){o.name=i.value.trim()||o.name;markDirty();render();}
   });
-  document.querySelectorAll('[data-odel]').forEach(b=>b.onclick=()=>{
-    const o=outletOf(b.dataset.odel);
-    if(!o||!confirm('Delete "'+o.name+'" and its '+o.tasks.length+' tasks?'))return;
+  document.querySelectorAll('[data-odel]').forEach(b=>b.onclick=async()=>{
+    const o=outletOf(b.dataset.odel); if(!o)return;
+    if(!await uiConfirm(`Delete <b>${esc(o.name)}</b> and its ${o.tasks.length} tasks?`,{title:'Delete outlet',ok:'Delete',danger:true}))return;
     DB.outlets=DB.outlets.filter(x=>x.id!==o.id);
     UI.outlets.delete(o.id);
     if(UI.outlet===o.id)UI.outlet=DB.outlets[0]?.id||null;
     markDirty(); render();
   });
 
+  // backup
+  on('bkDown',exportJSON);
+  on('bkUp',()=>$('fileJs').click());
+
   /* ---- persistent chrome ---- */
-  on('btnSave',saveAll);
+  on('btnExport',exportMenu);
   on('btnImport',()=>$('fileXl').click());
   const fx=$('fileXl');
   if(fx&&!fx._wired){fx._wired=true;fx.onchange=()=>{if(fx.files[0])handleXlsx(fx.files[0]);fx.value='';};}
   const fj=$('fileJs');
-  if(fj&&!fj._wired){fj._wired=true;fj.onchange=()=>{
+  if(fj&&!fj._wired){fj._wired=true;fj.onchange=async()=>{
     const f=fj.files[0]; fj.value='';
     if(!f)return;
     const fr=new FileReader();
-    fr.onload=e=>{
+    fr.onload=async e=>{
       try{
         const j=JSON.parse(e.target.result);
-        if(!j.outlets)throw new Error('not a tracker file');
+        if(!j.outlets)throw new Error('not a tracker backup');
+        if(!await uiConfirm(`Restore <b>${j.outlets.length} outlets</b> from this backup? It replaces the live data for everyone.`,{title:'Restore backup',ok:'Restore',danger:true}))return;
         DB=j; normalise();
         UI.outlet=DB.outlets[0]?.id; UI.outlets=new Set(DB.outlets.map(o=>o.id));
-        markDirty(); render(); toast('Loaded '+DB.outlets.length+' outlets — press Save to keep it');
+        markDirty(); render(); toast('Backup restored — publishing…');
       }catch(err){toast('Could not load: '+err.message);}
     };
     fr.readAsText(f);
@@ -1560,8 +1573,11 @@ function moveTask(taskId,d){
   markDirty(); render();
 }
 
-window.addEventListener('beforeunload',e=>{
-  if(dirty){e.preventDefault();e.returnValue='';}
+/* re-render when crossing the mobile breakpoint (frozen columns change) */
+let _wasMob=window.innerWidth<860;
+window.addEventListener('resize',()=>{
+  const m=window.innerWidth<860;
+  if(m!==_wasMob){_wasMob=m;render();}
 });
 boot();
 </script>
