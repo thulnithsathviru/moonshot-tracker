@@ -250,6 +250,18 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .cplegend .lg i{width:13px;height:13px;border-radius:3px;flex:none;display:block;border:1px solid rgba(0,0,0,.08)}
 .cplegend .lg em{font-style:normal;color:var(--ink-3);font-weight:450}
 
+.grip{cursor:grab;color:var(--ink-3);font-size:15px;line-height:1;user-select:none}
+tr.dragging{opacity:.4}
+tr.dragover td{box-shadow:inset 0 2px 0 var(--accent)}
+.pk-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:5px}
+.pk-dow span{text-align:center;font-size:10px;font-weight:700;color:var(--ink-3);letter-spacing:.08em}
+.pk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.pk{aspect-ratio:1;border:1px solid var(--line-2);background:var(--surface);border-radius:8px;font-size:12px;font-weight:550;color:var(--ink);cursor:pointer;transition:.12s}
+.pk:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.pk.on{color:#fff;font-weight:700}
+.pk.out{opacity:.35}
+.pk.busy{background:var(--surface-2);color:var(--ink-3);cursor:not-allowed;border-style:dashed}
+
 /* ---------- outlet cards ---------- */
 .ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:16px 20px}
 .ocard{border:1px solid var(--line);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:7px;background:var(--surface)}
@@ -1043,6 +1055,7 @@ function viewCritical(){
       <select id="cpOutlet">${DB.outlets.map(x=>`<option value="${x.id}" ${x.id===o.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
       <span class="sub hidesm">${fmtY(ws0)} → ${fmtY(we0)}</span>
       <span class="spacer"></span>
+      <button class="btn sm ${UI.cpFollow===false?'':'on'}" id="cpFollow" title="Pan the chart to the tasks you scroll to">Follow</button>
       <label class="swt" title="Turn on to edit tasks and work days"><input type="checkbox" id="editSwitch" ${UI.cpEdit?'checked':''}><span class="knob"></span>Edit</label>
       ${UI.cpEdit?'<button class="btn sm pri" id="cpAdd">Add task</button>':''}
       <button class="btn sm" id="cpToday">Today</button>
@@ -1070,16 +1083,13 @@ function viewCritical(){
         const hh=holidayOn(d); if(!hh)return;
         const dt=dayType(hh.typeId);
         const k=hh.typeId||'__none';
-        if(!seen.has(k))seen.set(k,{name:dt.name||'Marked day (no type)',color:dt.color,n:0,worked:0});
+        if(!seen.has(k))seen.set(k,{name:dt.name||'Marked day',color:dt.color,n:0,worked:0});
         const e=seen.get(k); e.n++;
         if((o.worksOn||[]).includes(d))e.worked++;
       });
-      const cats=[...new Set(o.tasks.map(t=>t.cat))].map(id=>cat(id)).filter(Boolean);
-      const bits=[
-        ...cats.map(c=>`<span class="lg"><i style="background:${c.color}"></i>${esc(c.name)}</span>`),
-        ...[...seen.values()].map(s=>`<span class="lg"><i style="background:${s.color}"></i>${esc(s.name)} <em>${s.n} day${s.n===1?'':'s'}${s.worked?' · works through '+s.worked:''}</em></span>`)
-      ];
-      return bits.length?`<div class="cplegend" id="cpLegend">${bits.join('')}</div>`:'';
+      if(!seen.size)return '';
+      return `<div class="cplegend" id="cpLegend">${[...seen.values()].map(s=>
+        `<span class="lg"><i style="background:${s.color}"></i>${esc(s.name)} <em>${s.n} day${s.n===1?'':'s'}${s.worked?' · works through '+s.worked:''}</em></span>`).join('')}</div>`;
     })()}
     <div class="gantt" id="cpWrap" data-keepscroll="cp" data-stickyw="${stickyW}">
       <table class="gt" id="gtb"><thead><tr>${fixHead}${head}</tr></thead>
@@ -1183,42 +1193,39 @@ function cpAttachAutoPan(){
   const w=document.getElementById('cpWrap');
   if(!w)return;
   const o=outletOf(UI.outlet); if(!o)return;
+  if(UI.cpFollow===false)return;                 // user turned Follow off
   const ws=addDays(outletSpan(o)[0],-3);
   const stickyW=+w.dataset.stickyw||0;
   let lastTop=w.scrollTop, lastLeft=w.scrollLeft, manual=0;
-  const markManual=()=>{manual=Date.now();};
-  w.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))markManual();},{passive:true});
-  w.addEventListener('touchstart',markManual,{passive:true});
-  w.addEventListener('pointerdown',markManual,{passive:true});
+  const mark=()=>{manual=Date.now();};
+  w.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))mark();},{passive:true});
+  w.addEventListener('touchstart',mark,{passive:true});
+  w.addEventListener('pointerdown',mark,{passive:true});
   w.addEventListener('scroll',()=>{
     const dv=w.scrollTop-lastTop, dh=w.scrollLeft-lastLeft;
     lastTop=w.scrollTop; lastLeft=w.scrollLeft;
-    if(dh&&!dv)markManual();          // the user is panning sideways — stay out of the way
+    if(dh&&!dv)mark();
     if(!dv)return;
     clearTimeout(w._pan);
     w._pan=setTimeout(()=>{
-      if(Date.now()-manual<1200)return;
+      if(Date.now()-manual<1000)return;
       const dhc=w.querySelector('th.d.dh'); if(!dhc)return;
-      const cellW=dhc.offsetWidth;
-      const headH=w.querySelector('thead').offsetHeight;
-      const top=w.scrollTop+headH, bot=w.scrollTop+w.clientHeight;
-      // every task visible in the pane right now
-      const vis=[...w.querySelectorAll('tbody tr[data-row]')]
-        .filter(r=>r.offsetTop+r.offsetHeight>top&&r.offsetTop<bot)
-        .map(r=>o.tasks.find(t=>t.id===r.dataset.row)).filter(Boolean);
-      if(!vis.length)return;
-      const first=vis.map(t=>t.start).sort()[0];
-      const lastD=vis.map(t=>t.end).sort().pop();
-      const l=stickyW+Math.max(0,diffDays(ws,first))*cellW;
-      const r=stickyW+(Math.max(0,diffDays(ws,lastD))+1)*cellW;
-      const viewL=w.scrollLeft+stickyW, viewR=w.scrollLeft+w.clientWidth;
-      if(l>=viewL-1&&r<=viewR+1)return;               // already in view — do nothing
-      const target=Math.max(0,Math.min(l-stickyW-cellW*2,
-        Math.max(0,(l+r)/2-stickyW-(w.clientWidth-stickyW)/2)));
+      const cellW=dhc.getBoundingClientRect().width;
+      const head=w.querySelector('thead'); if(!head)return;
+      const headH=head.getBoundingClientRect().height;
+      const wrapTop=w.getBoundingClientRect().top+headH;
+      // first row whose bottom is below the frozen header = the topmost visible task
+      const row=[...w.querySelectorAll('tbody tr[data-row]')]
+        .find(r=>r.getBoundingClientRect().bottom>wrapTop+2);
+      if(!row)return;
+      const t=o.tasks.find(x=>x.id===row.dataset.row); if(!t)return;
+      const target=Math.max(0,Math.round(Math.max(0,diffDays(ws,t.start))*cellW-cellW*2));
+      if(Math.abs(target-w.scrollLeft)<cellW)return;   // already there
       w.scrollTo({left:target,behavior:'smooth'});
-    },400);
+    },350);
   });
 }
+
 </script>
 
 <script>
@@ -1235,8 +1242,8 @@ function uniqueTasks(){
 function viewManage(){
   const catRows=DB.categories.map((c,i)=>{
     const n=DB.outlets.reduce((a,o)=>a+o.tasks.filter(t=>t.cat===c.id).length,0);
-    return `<tr>
-      <td style="white-space:nowrap"><button class="ibtn" data-cup="${c.id}" ${i===0?'disabled style="opacity:.25"':''}>↑</button><button class="ibtn" data-cdn="${c.id}" ${i===DB.categories.length-1?'disabled style="opacity:.25"':''}>↓</button></td>
+    return `<tr draggable="true" data-crow="${c.id}">
+      <td style="white-space:nowrap"><span class="grip" title="Drag to reorder">⠿</span></td>
       <td><input type="color" value="${c.color}" data-ccol="${c.id}"></td>
       <td><input type="text" value="${esc(c.name)}" data-cname="${c.id}" placeholder="Category name" style="width:100%;min-width:180px"></td>
       <td class="mono">${n}</td>
@@ -1248,7 +1255,10 @@ function viewManage(){
   const filt=UI.tcatFilter||'all';
   const shown=tasks.filter(u=>{
     const cur=DB.taskMap[u.key]??null;
-    return filt==='all'||(filt==='none'?!cur:!!cur);
+    if(filt==='all')return true;
+    if(filt==='none')return !cur;
+    if(filt==='some')return !!cur;
+    return cur===filt;
   });
   const nUncat=tasks.filter(u=>!(DB.taskMap[u.key]??null)).length;
   const tRows=shown.map(u=>{
@@ -1269,11 +1279,7 @@ function viewManage(){
       <td><input type="color" value="${d.color}" data-dcol="${d.id}"></td>
       <td style="min-width:150px"><input type="text" value="${esc(d.name)}" data-dname="${d.id}" placeholder="(no label)" style="width:100%"></td>
       <td style="min-width:300px"><div class="chips" style="margin-bottom:${dates.length?'7px':'0'}">${chips||'<span class="hint">No days yet</span>'}</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <input type="date" data-htdate="${d.id}">
-          <button class="btn sm" data-htadd="${d.id}">Add day</button>
-          <span class="hint">add as many as you need</span>
-        </div></td>
+        <button class="btn sm" data-htpick="${d.id}">Pick days…</button></td>
       <td><button class="ibtn del" data-ddel="${d.id}">✕</button></td>
     </tr>`;}).join('');
 
@@ -1292,8 +1298,8 @@ function viewManage(){
   <div class="card">
     <div class="card-h"><h2>Categories</h2><span class="spacer"></span>
       <button class="btn sm pri" id="catAdd">+ Add</button></div>
-    <div class="scroll"><table class="tbl"><thead><tr>
-      <th>Order</th><th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th></th></tr></thead>
+    <div class="scroll" style="max-height:340px" data-keepscroll="cats"><table class="tbl"><thead><tr>
+      <th></th><th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th></th></tr></thead>
       <tbody>${catRows||'<tr><td colspan="6" class="hint" style="padding:14px">None yet — press + Add.</td></tr>'}</tbody></table></div>
   </div>
 
@@ -1302,7 +1308,10 @@ function viewManage(){
       <div class="chips">
         <button class="fchip ${filt==='all'?'on':''}" data-tfilt="all" style="color:var(--ink-2)"><i></i>All ${tasks.length}</button>
         <button class="fchip ${filt==='none'?'on':''}" data-tfilt="none" style="color:var(--warn)"><i></i>Uncategorised ${nUncat}</button>
-        <button class="fchip ${filt==='some'?'on':''}" data-tfilt="some" style="color:var(--ok)"><i></i>Categorised ${tasks.length-nUncat}</button>
+        ${DB.categories.map(c=>{
+          const n=tasks.filter(u=>(DB.taskMap[u.key]??null)===c.id).length;
+          return n?`<button class="fchip ${filt===c.id?'on':''}" data-tfilt="${c.id}" style="color:${c.color}"><i></i>${esc(c.name||'(unnamed)')} ${n}</button>`:'';
+        }).join('')}
       </div></div>
     <div class="scroll" style="max-height:440px" data-keepscroll="tcat"><table class="tbl"><thead><tr>
       <th>Task</th><th>Outlets</th><th>Category</th></tr></thead>
@@ -1332,6 +1341,63 @@ function viewManage(){
   </div>`;
 }
 
+/* Month calendar for marking many days of one type in a single view. */
+function dayPicker(typeId){
+  const dt=dayType(typeId);
+  const owned=new Set(DB.holidays.filter(h=>h.typeId===typeId).map(h=>h.date));
+  const others=new Map(DB.holidays.filter(h=>h.typeId!==typeId).map(h=>[h.date,h]));
+  let month=([...owned].sort()[0]||today()).slice(0,7)+'-01';
+  const draw=()=>{
+    const d0=s2d(month), y=d0.getFullYear(), m=d0.getMonth();
+    const start=addDays(month,-d0.getDay());
+    const last=d2s(new Date(y,m+1,0));
+    const end=addDays(last,6-s2d(last).getDay());
+    const cells=range(start,end).map(d=>{
+      const inMo=d.slice(0,7)===month.slice(0,7);
+      const mine=owned.has(d), other=others.get(d);
+      return `<button class="pk ${mine?'on':''} ${inMo?'':'out'} ${other?'busy':''}"
+        ${other?`disabled title="Already marked as ${esc(dayType(other.typeId).name||'a special day')}"`:`data-pk="${d}"`}
+        style="${mine?`background:${dt.color};border-color:${dt.color}`:''}">${s2d(d).getDate()}</button>`;
+    }).join('');
+    document.getElementById('pk_grid').innerHTML=cells;
+    document.getElementById('pk_mon').textContent=MONF[m]+' '+y;
+    document.getElementById('pk_count').textContent=owned.size+' day'+(owned.size===1?'':'s')+' selected';
+    document.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>{
+      const d=b.dataset.pk;
+      if(owned.has(d))owned.delete(d); else owned.add(d);
+      draw();
+    });
+  };
+  showModal(`<div class="mod" style="width:min(430px,100%)">
+    <div class="mod-h"><h3>${esc(dt.name||'Special days')}</h3><span class="spacer"></span>
+      <button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mod-b">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <button class="btn sm" id="pk_prev">‹</button>
+        <b id="pk_mon" style="flex:1;text-align:center;font-family:var(--font-display)"></b>
+        <button class="btn sm" id="pk_next">›</button>
+      </div>
+      <div class="pk-dow">${DOW.map(x=>`<span>${x[0]}</span>`).join('')}</div>
+      <div class="pk-grid" id="pk_grid"></div>
+      <div class="hint" style="margin-top:10px"><span id="pk_count"></span> · click days to toggle</div>
+    </div>
+    <div class="mod-f"><button class="btn pri" id="pk_save">Apply</button>
+      <span class="spacer"></span><button class="btn" onclick="closeModal()">Cancel</button></div></div>`);
+  document.getElementById('pk_prev').onclick=()=>{const d=s2d(month);d.setMonth(d.getMonth()-1);month=d2s(d).slice(0,7)+'-01';draw();};
+  document.getElementById('pk_next').onclick=()=>{const d=s2d(month);d.setMonth(d.getMonth()+1);month=d2s(d).slice(0,7)+'-01';draw();};
+  document.getElementById('pk_save').onclick=()=>{
+    const nm=dayType(typeId).name;
+    const removed=DB.holidays.filter(h=>h.typeId===typeId&&!owned.has(h.date)).map(h=>h.date);
+    DB.holidays=DB.holidays.filter(h=>h.typeId!==typeId);
+    owned.forEach(d=>DB.holidays.push({date:d,label:nm?nm.toUpperCase():'',typeId}));
+    DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
+    const gone=new Set(removed);
+    DB.outlets.forEach(o=>o.worksOn=(o.worksOn||[]).filter(d=>!gone.has(d)));
+    markDirty(); closeModal(); render();
+  };
+  draw();
+}
+
 /* ========================== EXCEL IMPORT ========================== */
 const CAT_RULES=[
  ['prep',/tempor|tempory|to the container|equipment removal|rack arrangement|temporary setup/i],
@@ -1353,8 +1419,20 @@ function labelType(l){
   if(u.includes('STOCK'))return 'stock';
   return 'noworks';
 }
+/* Excel dates are read as raw serial numbers and converted with pure UTC maths.
+   Letting SheetJS build Date objects shifts every date a day earlier in any
+   timezone east of UTC (Colombo is +5:30), which is why imports were off by one. */
 function jsd(v){
-  if(v instanceof Date&&!isNaN(v))return d2s(new Date(v.getFullYear(),v.getMonth(),v.getDate()));
+  if(typeof v==='number'&&v>=20000&&v<=80000){        // ~1954 to ~2119
+    const ms=Date.UTC(1899,11,30)+Math.round(v)*86400000;
+    const d=new Date(ms);
+    return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+  }
+  if(v instanceof Date&&!isNaN(v)){                    // belt and braces
+    const ms=v.getTime()-v.getTimezoneOffset()*60000;
+    const d=new Date(Math.round(ms/86400000)*86400000);
+    return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+  }
   return null;
 }
 function parseWorkbook(wb){
@@ -1438,7 +1516,7 @@ function handleXlsx(file){
   fr.onload=e=>{
     let found;
     try{
-      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:false});
       found=parseWorkbook(wb);
     }catch(err){toast('Could not read that file: '+err.message);return;}
     if(!found.length){toast('No critical paths found — check for a date row and a Description column');return;}
@@ -1611,47 +1689,52 @@ function buildExportNode(t){
     if(lgParent&&!lg.isConnected)lgParent.insertBefore(lg,lgNext);
   }};
 }
+const PAGES={
+  a4:      {name:'A4',            w:11.69, h:8.27,  fmt:'a4'},
+  a3:      {name:'A3',            w:16.54, h:11.69, fmt:'a3'},
+  letter:  {name:'Letter',        w:11.0,  h:8.5,   fmt:'letter'},
+  legal:   {name:'Legal',         w:14.0,  h:8.5,   fmt:'legal'},
+  slide:   {name:'Slide 16:9',    w:13.333,h:7.5,   fmt:[960,540]},
+  fit:     {name:'Fit to content',w:0,     h:0,     fmt:null}
+};
 function exportMenu(){
   const t=exportTarget();
   if(!t||!t.el){toast('Open Milestones, Calendar or Critical Path to export');return;}
   const canXl=UI.view==='critical';
-  showModal(`<div class="mod" style="width:min(420px,100%)">
+  showModal(`<div class="mod" style="width:min(440px,100%)">
     <div class="mod-h"><h3>Export</h3>
       <span class="sub">${UI.view==='critical'?esc(outletOf(UI.outlet)?.name||''):UI.view}</span>
       <span class="spacer"></span><button class="x" onclick="closeModal()">✕</button></div>
     <div class="mod-b">
-      <div class="fld"><label>Type</label>
+      <div class="fld"><label>Format</label>
         <div class="seg mini" id="ex_type">
-          <button data-et="png" class="on">PNG</button>
-          <button data-et="pdf">PDF</button>
+          <button data-et="pdf" class="on">PDF</button>
+          <button data-et="png">PNG</button>
           ${canXl?'<button data-et="xlsx">Excel</button>':''}
         </div></div>
-      <div class="fld" id="ex_sizewrap"><label>Size</label>
-        <div class="seg mini" id="ex_size">
-          <button data-es="1">Small</button>
-          <button data-es="1.5" class="on">Medium</button>
-          <button data-es="2">Large</button>
-        </div></div>
+      <div class="fld" id="ex_pagewrap"><label>Page size</label>
+        <select id="ex_page">
+          ${Object.entries(PAGES).map(([k,v])=>`<option value="${k}" ${k==='a4'?'selected':''}>${v.name}${v.w?` — ${v.w}×${v.h} in`:''}</option>`).join('')}
+        </select>
+        <div class="hint" style="margin-top:6px">Rendered at 300 PPI. Landscape; the artwork is scaled to fit the page.</div>
+      </div>
     </div>
     <div class="mod-f"><button class="btn pri" id="ex_go">Export</button>
       <span class="spacer"></span><button class="btn" onclick="closeModal()">Cancel</button></div></div>`);
-  let type='png', size=1.5;
+  let type='pdf';
   document.querySelectorAll('#ex_type [data-et]').forEach(b=>b.onclick=()=>{
     type=b.dataset.et;
     document.querySelectorAll('#ex_type button').forEach(x=>x.classList.toggle('on',x===b));
-    document.getElementById('ex_sizewrap').style.display=type==='xlsx'?'none':'';
-  });
-  document.querySelectorAll('#ex_size [data-es]').forEach(b=>b.onclick=()=>{
-    size=+b.dataset.es;
-    document.querySelectorAll('#ex_size button').forEach(x=>x.classList.toggle('on',x===b));
+    document.getElementById('ex_pagewrap').style.display=type==='xlsx'?'none':'';
   });
   document.getElementById('ex_go').onclick=()=>{
+    const page=document.getElementById('ex_page').value;
     closeModal();
     if(type==='xlsx')exportExcel(UI.outlet);
-    else exportImage(type==='pdf',size);
+    else exportImage(type==='pdf',page);
   };
 }
-async function exportImage(pdf,size){
+async function exportImage(pdf,pageKey){
   const t=exportTarget();
   if(!t||!t.el){toast('Nothing to export');return;}
   toast('Rendering the full table…');
@@ -1663,17 +1746,22 @@ async function exportImage(pdf,size){
   try{
     const w=el.scrollWidth, hgt=el.scrollHeight;
     el.style.width=w+'px';
-    const scale=Math.min(size||1.5,12000/w);
+    const page=PAGES[pageKey]||PAGES.a4;
+    // 300 PPI across the chosen page width (capped so the canvas stays renderable)
+    const targetPx=page.w?page.w*300:w*2;
+    const scale=Math.max(1,Math.min(targetPx/w,16000/w,16000/hgt));
     const canvas=await html2canvas(el,{scale,backgroundColor:'#ffffff',windowWidth:w+80,windowHeight:hgt+80});
     const name='moonshot-'+t.name+'-'+today();
     if(pdf){
       const {jsPDF}=window.jspdf;
-      const land=canvas.width>canvas.height;
-      const doc=new jsPDF({orientation:land?'l':'p',unit:'pt',format:'a3',compress:true});
+      const fmt=page.fmt||[canvas.width*0.72/ (scale||1), canvas.height*0.72/(scale||1)];
+      const doc=new jsPDF({orientation:'l',unit:'pt',format:fmt,compress:true});
       const pw=doc.internal.pageSize.getWidth()-36,ph=doc.internal.pageSize.getHeight()-36;
       const r=Math.min(pw/canvas.width,ph/canvas.height);
-      doc.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',18,18,canvas.width*r,canvas.height*r,undefined,'FAST');
-      doc.save(name+'.pdf');
+      const x=(doc.internal.pageSize.getWidth()-canvas.width*r)/2;
+      const y=(doc.internal.pageSize.getHeight()-canvas.height*r)/2;
+      doc.addImage(canvas.toDataURL('image/jpeg',0.94),'JPEG',x,y,canvas.width*r,canvas.height*r,undefined,'FAST');
+      doc.save(name+'-'+(page.name||'').replace(/\s+/g,'')+'.pdf');
     }else{
       const a=document.createElement('a');
       a.href=canvas.toDataURL('image/png');a.download=name+'.png';a.click();
@@ -1729,6 +1817,7 @@ function wire(){
 
   /* ---- critical path ---- */
   const cpo=$('cpOutlet'); if(cpo)cpo.onchange=()=>{UI.outlet=cpo.value;render();};
+  on('cpFollow',()=>{UI.cpFollow=UI.cpFollow===false;render();});
   on('cpAdd',()=>{
     const o=outletOf(UI.outlet); if(!o)return;
     const [ws]=outletSpan(o);
@@ -1805,8 +1894,23 @@ function wire(){
     const inp=document.querySelector('#app .card:first-child tbody tr:last-child [data-cname]');
     if(inp)inp.focus();
   });
-  document.querySelectorAll('[data-cup]').forEach(b=>b.onclick=()=>moveCat(b.dataset.cup,-1));
-  document.querySelectorAll('[data-cdn]').forEach(b=>b.onclick=()=>moveCat(b.dataset.cdn,1));
+  // drag to reorder categories
+  let dragId=null;
+  document.querySelectorAll('[data-crow]').forEach(tr=>{
+    tr.addEventListener('dragstart',e=>{dragId=tr.dataset.crow;tr.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    tr.addEventListener('dragend',()=>{tr.classList.remove('dragging');document.querySelectorAll('tr.dragover').forEach(x=>x.classList.remove('dragover'));});
+    tr.addEventListener('dragover',e=>{e.preventDefault();if(tr.dataset.crow!==dragId)tr.classList.add('dragover');});
+    tr.addEventListener('dragleave',()=>tr.classList.remove('dragover'));
+    tr.addEventListener('drop',e=>{
+      e.preventDefault(); tr.classList.remove('dragover');
+      const to=tr.dataset.crow;
+      if(!dragId||dragId===to)return;
+      const from=DB.categories.findIndex(c=>c.id===dragId);
+      const item=DB.categories.splice(from,1)[0];
+      DB.categories.splice(DB.categories.findIndex(c=>c.id===to),0,item);
+      markDirty(); render();
+    });
+  });
   document.querySelectorAll('[data-tfilt]').forEach(b=>b.onclick=()=>{UI.tcatFilter=b.dataset.tfilt;render();});
   document.querySelectorAll('[data-ccol]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.ccol);if(c){c.color=i.value;markDirty();render();}});
   document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.cname);if(c){c.name=i.value.trim();markDirty();render();}});
@@ -1827,6 +1931,7 @@ function wire(){
   });
 
   // special-day dates per type
+  document.querySelectorAll('[data-htpick]').forEach(b=>b.onclick=()=>dayPicker(b.dataset.htpick));
   document.querySelectorAll('[data-htadd]').forEach(b=>b.onclick=()=>{
     const tid=b.dataset.htadd;
     const inp=document.querySelector(`[data-htdate="${tid}"]`);
