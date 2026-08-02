@@ -13,7 +13,7 @@
   --bg:#FBFBFD; --surface:#FFFFFF; --surface-2:#F5F5F7;
   --ink:#1D1D1F; --ink-2:#6E6E73; --ink-3:#8E8E93;
   --line:#E5E5EA; --line-2:#D2D2D7;
-  --accent:#509353; --accent-soft:#EAF3EC; --accent-deep:#3D7240; --accent-line:#BBD9BD;
+  --accent:#509353; --accent-soft:#EAF3EC;
   --ok:#34C759; --warn:#FF9500; --danger:#FF3B30;
   --radius:18px; --radius-sm:12px;
   --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 30px rgba(0,0,0,.06);
@@ -37,7 +37,7 @@ a{color:var(--accent)}
 .topbar{position:sticky;top:0;z-index:60;background:rgba(251,251,253,.82);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
 .topbar .twrap{max-width:1800px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:12px;min-height:58px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:16px;letter-spacing:-.02em;font-family:var(--font-display);flex:none}
-.brand .dot{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#8FC492,#509353 62%,#2E5931);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);flex:none}
+.brand .dot{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#7ab8ff,#0071E3 62%,#0a3f86);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);flex:none}
 .brand small{font-weight:430;color:var(--ink-3);font-size:13px;letter-spacing:0}
 .blogo{height:30px;width:auto;margin-right:2px;display:block}
 .swt{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:550;color:var(--ink-2);cursor:pointer;user-select:none}
@@ -61,14 +61,14 @@ a{color:var(--accent)}
 .btn:active{transform:translateY(.5px)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.pri:hover{background:#437C45}
-.btn.dark{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff}
-.btn.dark:hover{background:#2E5931}
+.btn.dark{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.dark:hover{background:#437C45}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
 .btn.ghost:hover{background:var(--surface-2);color:var(--ink)}
 .btn.dngr{color:#C0271A;border-color:#F3C9C4}
 .btn.dngr:hover{background:#FFF1F0}
 .btn.sm{padding:6px 11px;font-size:12.5px;border-radius:9px}
-.btn.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent-deep)}
+.btn.on{background:var(--accent-soft);border-color:#B4D3F4;color:var(--accent)}
 .btn[disabled]{opacity:.4;pointer-events:none}
 
 /* ---------- layout ---------- */
@@ -126,10 +126,10 @@ table.mtx{border-collapse:separate;border-spacing:0;font-size:13.5px;table-layou
 table.mtx th,table.mtx td{padding:0;text-align:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
 table.mtx th:last-child,table.mtx td:last-child{border-right:0}
 table.mtx tbody tr:last-child td{border-bottom:0}
-table.mtx thead th{padding:14px 12px;height:58px;font-weight:600;font-size:13px;letter-spacing:-.01em;color:#fff;vertical-align:middle}
+table.mtx thead th{padding:13px 10px;font-weight:600;font-size:13px;letter-spacing:-.01em;color:#fff;vertical-align:middle;line-height:1.25}
 table.mtx thead th.lead{text-align:left;padding-left:16px;color:var(--ink-2);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;white-space:nowrap;background:var(--surface-2)}
-table.mtx thead th .oname{display:block;line-height:1.25;overflow-wrap:break-word;word-break:break-word;hyphens:auto}
-table.mtx tbody td{height:44px;font-variant-numeric:tabular-nums}
+table.mtx thead th .oname{line-height:1.22;overflow-wrap:break-word;word-break:normal;hyphens:auto;display:block;padding:1px 0}
+table.mtx tbody td{height:44px;font-variant-numeric:tabular-nums;padding:0 6px}
 table.mtx tbody tr:nth-child(even) td{background:#FAFAFB}
 table.mtx tbody td.lead{text-align:left;font-weight:600;color:var(--ink);padding:0 14px 0 16px;letter-spacing:-.012em;font-size:13px;background:var(--surface-2);border-right:2px solid var(--line-2);white-space:nowrap}
 table.mtx tbody tr:nth-child(even) td.lead{background:#F0F0F3}
@@ -153,7 +153,7 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt .fc{position:sticky;z-index:3;background:var(--surface);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0 8px;text-align:left;vertical-align:middle;font-size:11px}
 .gt .fc.last{border-right:2px solid var(--line-2)}
 .gt thead .fc{z-index:7;top:0;background:var(--surface-2);border-bottom:1px solid var(--line-2);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:700;vertical-align:bottom;padding-bottom:8px}
-.gt tbody tr:hover .fc{background:#F3F8F3}
+.gt tbody tr:hover .fc{background:#F5F9FE}
 .gt thead th{position:sticky;top:0;z-index:4;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
 .gt .d{width:var(--cell);min-width:var(--cell);max-width:var(--cell);border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .gt tbody tr{height:var(--cell)}
@@ -193,16 +193,14 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .stat div{display:flex;flex-direction:column}
 .stat b{font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:-.02em}
 .stat span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:650;margin-top:1px}
-/* critical-path day-type legend (also captured in the export) */
-.cp-legend{display:flex;gap:9px 20px;flex-wrap:wrap;align-items:center;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface);border-radius:0 0 var(--radius) var(--radius)}
-.cp-legend span{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-2);font-weight:550}
-.cp-legend i{width:11px;height:11px;border-radius:3px;flex:none}
 /* exporting: neutralise sticky so the whole table rasterises flat */
 .exporting .gt .fc,.exporting .gt thead th,.exporting .gt thead .fc{position:static!important}
 .exporting .gantt{max-height:none!important;overflow:visible!important}
-.exporting .mtx-outer{overflow:visible!important}
-.exporting .dgroup-h{position:static!important}
-.exporting .cp-legend{border-radius:0}
+.exporting .mtx-outer{overflow:visible!important;padding:26px!important}
+.exporting table.mtx{table-layout:auto!important;width:auto!important;margin:0!important}
+.exporting table.mtx th,.exporting table.mtx td{white-space:nowrap}
+.exporting table.mtx th.lead,.exporting table.mtx td.lead{white-space:nowrap;width:auto!important}
+.exporting .cplegend{break-inside:avoid}
 /* ---------- calendar (old chip design) ---------- */
 .cal-dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:7px;padding:18px 20px 0}
 .cal-dow div{text-align:center;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
@@ -241,6 +239,15 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .cal-legend span{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-2);font-weight:500}
 .cal-legend i{width:9px;height:9px;border-radius:3px}
 
+.navgrp{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border-radius:11px;padding:3px}
+.navgrp input{border-color:transparent;background:var(--surface)}
+
+/* ---------- critical path legend ---------- */
+.cplegend{display:flex;gap:9px 20px;flex-wrap:wrap;align-items:center;padding:11px 20px;border-top:1px solid var(--line);background:var(--surface)}
+.cplegend .lg{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-2);font-weight:550}
+.cplegend .lg i{width:13px;height:13px;border-radius:3px;flex:none;display:block;border:1px solid rgba(0,0,0,.08)}
+.cplegend .lg em{font-style:normal;color:var(--ink-3);font-weight:450}
+
 /* ---------- outlet cards ---------- */
 .ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:16px 20px}
 .ocard{border:1px solid var(--line);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:7px;background:var(--surface)}
@@ -268,10 +275,10 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .cbrow input{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
 .note{background:#FFF9EE;border:1px solid #F0DDB8;border-radius:12px;padding:12px 14px;font-size:12.5px;color:#7A5A18;margin-bottom:14px}
 .note b{display:block;margin-bottom:3px}
-.note.blue{background:var(--accent-soft);border-color:var(--accent-line);color:#2B5A2E}
+.note.blue{background:var(--accent-soft);border-color:#B4D3F4;color:#0A4E93}
 
 /* toast */
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:400;background:var(--accent-deep);color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.3);animation:tin .2s}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:400;background:#2C3F2E;color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.3);animation:tin .2s}
 @keyframes tin{from{opacity:0;transform:translate(-50%,8px)}}
 .hidden{display:none!important}
 
@@ -352,9 +359,6 @@ let UI={ view:'milestones', outlet:null, calMode:'month', calDate:null,
          outlets:null, cpEdit:false };
 
 const PALETTE=["#0071E3","#34C759","#FF9500","#AF52DE","#FF2D55","#E91E8C","#00897B","#F59E0B","#A2845E","#7B1FA2","#C7A500","#8E8E93"];
-/* Day types are read as full-height columns behind the bars, so they take the
-   deeper, quieter end of the range — and each new one a colour of its own. */
-const DT_PALETTE=["#4c5566","#a3324a","#9a5b18","#5b4b8a","#1f6f8b","#2f6b4f","#7a3d6b","#8a6d1f","#3b5f8a","#6b4630"];
 
 /* ---------- date helpers ('YYYY-MM-DD' strings throughout) ---------- */
 const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -385,48 +389,19 @@ function darken(hex,f){
   const r=Math.round(((n>>16)&255)*(1-f)), g=Math.round(((n>>8)&255)*(1-f)), b=Math.round((n&255)*(1-f));
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
-/** Largest of the given sizes at which every word fits inside `avail` px. */
-let _measCtx=null;
-function fitHeadFont(names,avail,sizes=[13,12.5,12,11.5,11,10.5]){
-  if(!names.length)return sizes[0];
-  _measCtx=_measCtx||document.createElement('canvas').getContext('2d');
-  const fam=getComputedStyle(document.body).fontFamily;
-  const words=names.join(' ').split(/\s+/).filter(Boolean);
-  for(const px of sizes){
-    _measCtx.font='600 '+px+'px '+fam;
-    if(words.every(w=>_measCtx.measureText(w).width<=avail))return px;
-  }
-  return sizes[sizes.length-1];
-}
 
 /* ---------- lookups ---------- */
 const cat=id=>id?(DB.categories.find(c=>c.id===id)||null):null;
 const UNCAT={id:null,name:'Uncategorised',color:'#8E8E93',inMilestones:false};
 const catOf=t=>cat(t.cat)||UNCAT;
 const NOTYPE={id:null,name:'',color:'#8E8E93',text:'#ffffff'};
-/** Unknown ids resolve to the no-type object — never to another type, which would
-    silently relabel days that belonged to a type someone deleted. */
 const dayType=id=>(id?DB.dayTypes.find(t=>t.id===id):null)||NOTYPE;
-const dayTypeRaw=id=>DB.dayTypes.find(t=>t.id===id)||null;
 const outletOf=id=>DB.outlets.find(o=>o.id===id);
 
 /** The programme calendar is global. */
 function holidayOn(date){ return DB.holidays.find(h=>h.date===date)||null; }
 /** Display label always comes from the day type, so Setup and the charts can never disagree. */
-function holLabel(h){ return h.typeId?dayType(h.typeId).name.toUpperCase():''; }
-/** Distinct day types marked across `days`, first seen first. The legend for a
-    chart — shared by the Critical Path card, its image/PDF export and the Excel
-    sheet, so the three can never disagree about what a colour means. */
-function dayTypeLegend(days){
-  const seen=new Set(), out=[];
-  days.forEach(d=>{
-    const h=holidayOn(d); if(!h)return;
-    const k=h.typeId||'';
-    if(seen.has(k))return;
-    seen.add(k); out.push(dayType(h.typeId));
-  });
-  return out;
-}
+function holLabel(h){ const n=dayType(h.typeId).name; return n?n.toUpperCase():''; }
 /** Blocked for this outlet: any marked day, unless the outlet has a works-anyway exception. */
 function blockedOn(o,date){
   const h=holidayOn(date);
@@ -598,13 +573,7 @@ function normalise(){
   });
   applyTaskMap();
   DB.dayTypes.forEach(t=>{delete t.working; if(t.name==='Note (work continues)')t.name='Note';});
-  // a day type that no longer exists must not borrow another type's identity:
-  // drop the dead id so the day shows as untyped, and keep the label in step
-  const dtIds=new Set(DB.dayTypes.map(t=>t.id));
-  DB.holidays.forEach(h=>{
-    if(h.typeId&&!dtIds.has(h.typeId))h.typeId=null;
-    h.label=holLabel(h);
-  });
+  DB.holidays.forEach(h=>{ if(h.typeId&&!DB.dayTypes.some(t=>t.id===h.typeId))h.typeId=null; });
   DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
 }
 
@@ -675,23 +644,20 @@ function toast(m){
   clearTimeout(toast._t); toast._t=setTimeout(()=>t.innerHTML='',2600);
 }
 function closeModal(){document.getElementById('modal').innerHTML='';}
-/** In-app replacements for confirm()/prompt() — no browser popups.
-    Resolves true (ok), 'alt' (the optional second choice) or false (cancel). */
+/** In-app replacements for confirm()/prompt() — no browser popups. */
 function uiConfirm(msg,opt={}){
   return new Promise(res=>{
-    showModal(`<div class="mod" style="width:min(460px,100%)">
+    showModal(`<div class="mod" style="width:min(430px,100%)">
       <div class="mod-h"><h3>${esc(opt.title||'Are you sure?')}</h3><span class="spacer"></span>
         <button class="x" id="uc_x">✕</button></div>
       <div class="mod-b"><p class="hint" style="font-size:13px;color:var(--ink)">${msg}</p></div>
       <div class="mod-f">
         <button class="btn ${opt.danger?'dngr':'pri'}" id="uc_ok">${esc(opt.ok||'Yes')}</button>
-        ${opt.alt?`<button class="btn" id="uc_alt">${esc(opt.alt)}</button>`:''}
         <span class="spacer"></span>
         <button class="btn" id="uc_no">${esc(opt.cancel||'Cancel')}</button>
       </div></div>`);
     const done=v=>{closeModal();res(v);};
     document.getElementById('uc_ok').onclick=()=>done(true);
-    document.getElementById('uc_alt')?.addEventListener('click',()=>done('alt'));
     document.getElementById('uc_no').onclick=()=>done(false);
     document.getElementById('uc_x').onclick=()=>done(false);
   });
@@ -710,7 +676,6 @@ function uiPrompt(msg,opt={}){
       </div></div>`);
     const done=v=>{closeModal();res(v);};
     const inp=document.getElementById('up_v'); inp.focus();
-    // allowEmpty: '' is a real answer, so only Cancel resolves null
     const val=()=>opt.allowEmpty?inp.value.trim():(inp.value.trim()||null);
     inp.onkeydown=e=>{if(e.key==='Enter')done(val());};
     document.getElementById('up_ok').onclick=()=>done(val());
@@ -740,15 +705,7 @@ function viewMilestones(){
   const cats=DB.categories.filter(c=>c.inMilestones);
   const outs=DB.outlets.filter(o=>UI.outlets.has(o.id));
 
-  /* Explicit widths keep table-layout:fixed deterministic: header and body can
-     never drift apart, on screen or in an export. Without a width the table
-     shrinks to its container and squeezes every column instead of scrolling. */
-  const LEADW=236, COLW=132, HPADX=12;
-  /* A long single-word name would break mid-word in a fixed column, so the header
-     type steps down until the longest word fits. Measured rather than guessed, and
-     the same size is used on screen and in the export. */
-  const hfs=fitHeadFont(outs.map(o=>o.name),COLW-2*HPADX);
-  const head=outs.map(o=>`<th style="background:${o.color};width:${COLW}px;font-size:${hfs}px">
+  const head=outs.map(o=>`<th style="background:${o.color};min-width:96px">
       <span class="oname">${esc(o.name)}</span></th>`).join('');
 
   let body='';
@@ -788,13 +745,19 @@ function viewMilestones(){
     <div class="mtx-outer" id="msSlide" data-keepscroll="ms">
       <div class="slide-head">
         <div><span class="eyebrow">Moonshot Programme</span>
-          <h2>Milestone Matrix</h2></div>
+          <h2>Milestone Matrix</h2>
+</div>
         <div class="right"><b>${outs.length} outlets</b>${cats.length} of ${DB.categories.length} categories shown</div>
       </div>
-      <table class="mtx" style="width:${LEADW+2+outs.length*COLW}px">
-        <thead><tr><th class="lead" style="width:${LEADW}px">Milestone</th>${head}</tr></thead>
+      <table class="mtx">
+        <thead><tr><th class="lead" style="width:236px">Milestone</th>${head}</tr></thead>
         <tbody>${body}</tbody>
       </table>
+    </div>
+    <div class="card-b hint" style="border-top:1px solid var(--line)">
+      A cell runs from the first day of the earliest task to the last day of the latest task in that
+      category for the outlet. Use the chips above to choose which categories count as milestones;
+      assign tasks to categories on the Setup page. Click a Launch cell to set the launch date by hand.
     </div>
   </div>`;
 }
@@ -805,7 +768,8 @@ function launchEditor(outId){
       <span class="sub">${esc(o.name)}</span><span class="spacer"></span>
       <button class="x" onclick="closeModal()">✕</button></div>
     <div class="mod-b">
-      <div class="fld"><label>Launch date</label><input type="date" id="l_date" value="${o.launch||''}"></div></div>
+      <div class="fld"><label>Launch date</label><input type="date" id="l_date" value="${o.launch||''}"></div>
+      <div class="hint">Set by hand — the launch isn't read from the workbook.</div></div>
     <div class="mod-f"><button class="btn pri" id="l_save">Set</button>
       ${o.launch?'<button class="btn" id="l_clear">Clear</button>':''}
       <span class="spacer"></span><button class="btn" onclick="closeModal()">Cancel</button></div></div>`);
@@ -858,12 +822,11 @@ function viewCalendar(){
   else [body,title]=calDay();
   const legend=DB.outlets.filter(o=>UI.outlets.has(o.id));
   return `<div class="card">
-    <div class="card-h"><h2>${title}</h2>
-      <span class="sub">${legend.length} outlet${legend.length===1?'':'s'}</span></div>
+    <div class="card-h"><h2>${title}</h2></div>
     <div class="bar">
       <div class="seg mini">${['day','week','month'].map(m=>
         `<button data-cal="${m}" class="${UI.calMode===m?'on':''}">${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}</div>
-      <div style="display:flex;align-items:center;gap:6px">
+      <div class="navgrp">
         <button class="btn sm" id="calPrev" title="Previous">‹</button>
         ${UI.calMode==='month'
           ?`<input type="month" id="calJumpM" value="${UI.calDate.slice(0,7)}">`
@@ -925,8 +888,8 @@ function calDay(){
       </div>`).join('');
     return `<div class="dgroup"><div class="dgroup-h"><i style="background:${g.o.color}"></i>${esc(g.o.name)}<span class="cnt">${g.items.length}</span></div>${list}</div>`;
   }).join('');
-  const head=h?`<div class="note" style="margin:16px 20px 0;background:${dt.color}12;border-color:${dt.color}44;color:${darken(dt.color,.2)};font-weight:650">
-    ${esc(holLabel(h)||'Marked day')}</div>`:'';
+  const head=h?`<div class="note" style="margin:16px 20px 0;background:${dt.color}12;border-color:${dt.color}44;color:${darken(dt.color,.2)}">
+    <b>${esc(holLabel(h))}</b>Marked day — outlets pause here unless they have a works-anyway exception.</div>`:'';
   return [head+`<div class="daylist">${groups||'<div class="card-b hint">Nothing scheduled on this day for the selected outlets.</div>'}</div>`,
           DOW[dowOf(date)]+', '+fmtY(date)];
 }
@@ -947,7 +910,7 @@ function dayDrill(date){
       <h3>${DOW[dowOf(date)]}, ${fmtY(date)}</h3><span class="spacer"></span>
       <button class="x" onclick="closeModal()">✕</button></div>
     <div class="mod-b">
-      ${h?`<div class="note" style="font-weight:650">${esc(holLabel(h)||'Marked day')}</div>`:''}
+      ${h?`<div class="note"><b>${esc(holLabel(h))}</b>Marked day — blocked except outlets with a works-anyway exception.</div>`:''}
       ${body}</div>
     <div class="mod-f"><button class="btn" id="drillDay">Open day view</button>
       <span class="spacer"></span><button class="btn" onclick="closeModal()">Done</button></div></div>`);
@@ -1048,12 +1011,6 @@ function viewCritical(){
 
   const sug=(DB.suggestedHolidays||[]).filter(s=>!holidayOn(s.date));
 
-  // legend for every day type marked inside this outlet's window — the in-column
-  // labels are gone, so this is what tells the colours apart (exported too)
-  const legend=dayTypeLegend(days);
-  const legendHtml=legend.length?`<div class="cp-legend">${legend.map(dt=>
-    `<span><i style="background:${dt.color}"></i>${esc(dt.name||'Marked day')}</span>`).join('')}</div>`:'';
-
   return `<div class="card">
     <div class="card-h">
       <h2>Critical Path</h2>
@@ -1080,12 +1037,27 @@ function viewCritical(){
       them and every bar recalculates; if the pauses were intentional, dismiss this.
       <div style="margin-top:8px"><button class="btn sm" id="cpAddSug">Add all as non-working days</button>
       <button class="btn sm ghost" id="cpDismissSug">Dismiss</button></div></div></div>`:''}
-    <div id="cpExport">
-      <div class="gantt" id="cpWrap" data-keepscroll="cp" data-stickyw="${stickyW}">
-        <table class="gt" id="gtb"><thead><tr>${fixHead}${head}</tr></thead>
-        <tbody>${rows||`<tr><td class="fc" colspan="99" style="padding:20px;position:static">No tasks yet — use <b>Add task</b>.</td></tr>`}</tbody></table>
-      </div>
-      ${legendHtml}
+    ${(()=>{
+      const seen=new Map();
+      days.forEach(d=>{
+        const hh=holidayOn(d); if(!hh)return;
+        const dt=dayType(hh.typeId);
+        const k=hh.typeId||'__none';
+        if(!seen.has(k))seen.set(k,{name:dt.name||'Marked day (no type)',color:dt.color,n:0,worked:0});
+        const e=seen.get(k); e.n++;
+        if((o.worksOn||[]).includes(d))e.worked++;
+      });
+      const cats=[...new Set(o.tasks.map(t=>t.cat))].map(id=>cat(id)).filter(Boolean);
+      const bits=[
+        ...cats.map(c=>`<span class="lg"><i style="background:${c.color}"></i>${esc(c.name)}</span>`),
+        ...(o.tasks.some(t=>!t.cat)?[`<span class="lg"><i style="background:${UNCAT.color}"></i>Uncategorised</span>`]:[]),
+        ...[...seen.values()].map(s=>`<span class="lg"><i style="background:${s.color}"></i>${esc(s.name)} <em>${s.n} day${s.n===1?'':'s'}${s.worked?' · works through '+s.worked:''}</em></span>`)
+      ];
+      return bits.length?`<div class="cplegend" id="cpLegend">${bits.join('')}</div>`:'';
+    })()}
+    <div class="gantt" id="cpWrap" data-keepscroll="cp" data-stickyw="${stickyW}">
+      <table class="gt" id="gtb"><thead><tr>${fixHead}${head}</tr></thead>
+      <tbody>${rows||`<tr><td class="fc" colspan="99" style="padding:20px;position:static">No tasks yet — use <b>Add task</b>.</td></tr>`}</tbody></table>
     </div>
   </div>`;
 }
@@ -1106,7 +1078,7 @@ function editHoliday(outId,date){
       <div class="grid2">
         <div class="fld"><label>Day type <span style="text-transform:none;letter-spacing:0;font-weight:450">(optional)</span></label><select id="h_type">
           <option value="" ${cur&&!cur.typeId?'selected':''}>— No type —</option>
-          ${DB.dayTypes.map(dt=>`<option value="${dt.id}" ${cur&&cur.typeId===dt.id?'selected':''}>${esc(dt.name||'(no label)')}</option>`).join('')}</select></div>
+          ${DB.dayTypes.map(dt=>`<option value="${dt.id}" ${cur&&cur.typeId===dt.id?'selected':''}>${esc(dt.name)}</option>`).join('')}</select></div>
         <div class="fld"><label>Until (optional, for multi-day)</label>
           <input type="date" id="h_until" value="" min="${date}"></div>
       </div>
@@ -1255,7 +1227,7 @@ function viewManage(){
     const chips=dates.map(x=>`<button class="fchip on" data-htdel="${x}" title="Remove ${fmtY(x)}" style="color:${d.color}"><i></i>${fmt(x)} ✕</button>`).join('');
     return `<tr>
       <td><input type="color" value="${d.color}" data-dcol="${d.id}"></td>
-      <td style="min-width:150px"><input type="text" value="${esc(d.name)}" data-dname="${d.id}" placeholder="No label" style="width:100%"></td>
+      <td style="min-width:150px"><input type="text" value="${esc(d.name)}" data-dname="${d.id}" placeholder="(no label)" style="width:100%"></td>
       <td style="min-width:280px"><div class="chips" style="margin-bottom:${dates.length?'7px':'0'}">${chips||'<span class="hint">No days marked yet</span>'}</div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <input type="date" data-htfrom="${d.id}">
@@ -1264,21 +1236,6 @@ function viewManage(){
           <button class="btn sm" data-htadd="${d.id}">Add</button>
         </div></td>
       <td><button class="ibtn del" data-ddel="${d.id}">✕</button></td>
-    </tr>`;}).join('');
-
-  /* every marked day in one place — nothing can hide in the data */
-  const mdRows=DB.holidays.map(h=>{
-    const dt=dayType(h.typeId);
-    const works=DB.outlets.filter(o=>(o.worksOn||[]).includes(h.date));
-    return `<tr>
-      <td class="mono" style="white-space:nowrap">${fmtY(h.date)}</td>
-      <td style="white-space:nowrap;color:var(--ink-3)">${DOW[dowOf(h.date)]}</td>
-      <td style="white-space:nowrap"><span class="catdot" style="background:${dt.color};margin-right:7px"></span>${
-        dt.name?esc(dt.name):'<span style="color:var(--ink-3)">No type</span>'}</td>
-      <td>${works.length
-        ?`<div class="chips">${works.map(o=>`<span class="fchip on" style="color:${o.color}"><i></i>${esc(o.name)}</span>`).join('')}</div>`
-        :'<span style="color:var(--ink-3)">—</span>'}</td>
-      <td><button class="ibtn del" data-htdel="${h.date}" title="Remove ${fmtY(h.date)}">✕</button></td>
     </tr>`;}).join('');
 
   const oCards=DB.outlets.map(o=>{
@@ -1293,9 +1250,25 @@ function viewManage(){
       <div class="ometa">${o.tasks.length} tasks · ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}${w?'<br>works through '+w+' special day'+(w===1?'':'s'):''}</div>
     </div>`;}).join('');
 
+  const allHols=[...DB.holidays].sort((a,b)=>a.date.localeCompare(b.date));
+  const holRows=allHols.map(x=>{
+    const dt=dayType(x.typeId);
+    const works=DB.outlets.filter(o=>(o.worksOn||[]).includes(x.date));
+    return `<tr>
+      <td class="mono" style="white-space:nowrap">${fmtY(x.date)}<div class="tmeta">${DOW[dowOf(x.date)]}</div></td>
+      <td><select data-hset="${x.date}" style="min-width:180px">
+        <option value="" ${!x.typeId?'selected':''}>— No type —</option>
+        ${DB.dayTypes.map(t=>`<option value="${t.id}" ${t.id===x.typeId?'selected':''}>${esc(t.name||'(no label)')}</option>`).join('')}
+      </select></td>
+      <td><span class="fchip on" style="color:${dt.color}"><i></i>${esc(dt.name||'No type')}</span></td>
+      <td style="font-size:11.5px;color:var(--ink-2)">${works.length?works.map(o=>esc(o.name)).join(', '):'—'}</td>
+      <td><button class="ibtn del" data-htdel="${x.date}" title="Remove">✕</button></td>
+    </tr>`;}).join('');
+
   return `
   <div class="card">
-    <div class="card-h"><h2>Categories</h2><span class="spacer"></span>
+    <div class="card-h"><h2>Categories</h2>
+      <span class="spacer"></span>
       <button class="btn sm pri" id="catAdd">Add category</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
       <th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th></th></tr></thead>
@@ -1303,26 +1276,27 @@ function viewManage(){
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Task categorisation</h2></div>
+    <div class="card-h"><h2>Task categorisation</h2>
+      </div>
     <div class="scroll" style="max-height:440px"><table class="tbl"><thead><tr>
       <th>Task</th><th>Outlets</th><th>Category</th></tr></thead>
       <tbody>${tRows}</tbody></table></div>
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Special days</h2><span class="spacer"></span>
+    <div class="card-h"><h2>Special days</h2>
+      <span class="spacer"></span>
       <button class="btn sm pri" id="dtAdd">Add day type</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
       <th></th><th>Type</th><th>Days</th><th></th></tr></thead>
-      <tbody>${dtRows||'<tr><td colspan="4" class="hint" style="padding:14px">No day types yet.</td></tr>'}</tbody></table></div>
+      <tbody>${dtRows}</tbody></table></div>
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>All marked days</h2>
-      <span class="sub">${DB.holidays.length} day${DB.holidays.length===1?'':'s'}</span></div>
-    <div class="scroll" style="max-height:440px"><table class="tbl"><thead><tr>
-      <th>Date</th><th>Day</th><th>Type</th><th>Outlets working through</th><th></th></tr></thead>
-      <tbody>${mdRows||'<tr><td colspan="5" class="hint" style="padding:14px">No days marked.</td></tr>'}</tbody></table></div>
+    <div class="card-h"><h2>Marked days</h2><span class="sub">${allHols.length}</span></div>
+    <div class="scroll" style="max-height:400px"><table class="tbl"><thead><tr>
+      <th>Date</th><th>Type</th><th>Shown as</th><th>Works through</th><th></th></tr></thead>
+      <tbody>${holRows||'<tr><td colspan="5" class="hint" style="padding:14px">No days marked.</td></tr>'}</tbody></table></div>
   </div>
 
   <div class="card">
@@ -1356,13 +1330,10 @@ const CAT_RULES=[
 function guessCat(n){for(const[id,re]of CAT_RULES)if(re.test(n)&&DB.categories.some(c=>c.id===id))return id;return null;}
 function labelType(l){
   const u=(l||'').toUpperCase();
-  let id='noworks';
-  if(u.includes('POYA'))id='poya';
-  else if(u.includes('PUBLIC')||u.includes('HOLIDAY'))id='public';
-  else if(u.includes('STOCK'))id='stock';
-  // the matching type may have been deleted — import the day untyped rather than
-  // stamping it with an id nothing answers to
-  return dayTypeRaw(id)?id:null;
+  if(u.includes('POYA'))return 'poya';
+  if(u.includes('PUBLIC')||u.includes('HOLIDAY'))return 'public';
+  if(u.includes('STOCK'))return 'stock';
+  return 'noworks';
 }
 function jsd(v){
   if(v instanceof Date&&!isNaN(v))return d2s(new Date(v.getFullYear(),v.getMonth(),v.getDate()));
@@ -1582,21 +1553,6 @@ async function exportExcel(scope){
     for(let r=2;r<=2+o.tasks.length;r++)for(let cix=F+1;cix<=F+days.length;cix++){
       ws.getCell(r,cix).border={right:{style:'thin',color:{argb:'FFE5E5EA'}},bottom:{style:'thin',color:{argb:'FFE5E5EA'}}};
     }
-    // same legend as the on-screen chart: an unlabelled type is just a colour
-    // in the grid, so the sheet has to say what it means
-    const legend=dayTypeLegend(days);
-    if(legend.length){
-      const r0=4+o.tasks.length;
-      const t=ws.getCell(r0,1);
-      t.value='Day types'; t.font={bold:true,size:9,color:{argb:'FF6E6E73'}};
-      legend.forEach((dt,i)=>{
-        const c=ws.getCell(r0+1+i,1);
-        c.value=dt.name||'Marked day';
-        c.fill={type:'pattern',pattern:'solid',fgColor:{argb:hex2argb(dt.color)}};
-        c.font={size:10,bold:true,color:{argb:hex2argb(dt.text||'#FFFFFF')}};
-        c.alignment={horizontal:'left',indent:1};
-      });
-    }
   });
   const buf=await wb.xlsx.writeBuffer();
   const b=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -1613,9 +1569,29 @@ async function exportExcel(scope){
 function exportTarget(){
   if(UI.view==='milestones')return {el:document.getElementById('msSlide'),name:'milestone-matrix'};
   if(UI.view==='calendar')  return {el:document.getElementById('calBody'),name:'calendar'};
-  // #cpExport wraps the chart AND the day-type legend, so both land in the image
-  if(UI.view==='critical')  return {el:document.getElementById('cpExport'),name:'critical-path-'+UI.outlet};
+  if(UI.view==='critical')  return {el:document.getElementById('gtb'),name:'critical-path-'+UI.outlet,legend:true};
   return null;
+}
+/** Wrap the chart with its legend so exports carry the key too. */
+function buildExportNode(t){
+  if(!t.legend)return {node:t.el,cleanup:()=>{}};
+  const lg=document.getElementById('cpLegend');
+  if(!lg)return {node:t.el,cleanup:()=>{}};
+  const box=document.createElement('div');
+  box.style.cssText='background:#fff;display:inline-block;padding:0';
+  const parent=t.el.parentNode, next=t.el.nextSibling;
+  const lgParent=lg.parentNode, lgNext=lg.nextSibling;
+  const lgClone=lg.cloneNode(true);
+  lgClone.style.borderTop='0';
+  lgClone.style.borderBottom='1px solid #E5E5EA';
+  box.appendChild(lgClone);
+  parent.insertBefore(box,next);
+  box.appendChild(t.el);
+  return {node:box,cleanup:()=>{
+    parent.insertBefore(t.el,box);
+    box.remove();
+    if(lgParent&&!lg.isConnected)lgParent.insertBefore(lg,lgNext);
+  }};
 }
 function exportMenu(){
   const t=exportTarget();
@@ -1660,37 +1636,17 @@ function exportMenu(){
 async function exportImage(pdf,size){
   const t=exportTarget();
   if(!t||!t.el){toast('Nothing to export');return;}
-  const el=t.el;
   toast('Rendering the full table…');
   document.body.classList.add('exporting');
-  const undo=[];
-  const pin=(node,prop,val)=>{undo.push([node,prop,node.style[prop]]);node.style[prop]=val;};
-  await new Promise(r=>setTimeout(r,60));   // let layout settle without sticky
+  const wrap=buildExportNode(t);
+  const el=wrap.node;
+  const prevW=el.style.width;
+  await new Promise(r=>setTimeout(r,80));   // let layout settle without sticky/fixed widths
   try{
-    /* html2canvas re-lays-out in a cloned document, where an auto-width table
-       can size its header differently from its body. Pin every table to a fixed
-       px width so the capture is identical at 1 outlet or 20.
-       Two passes: a table-layout:fixed table with no width shrinks to its
-       container and squeezes its columns, and only springs back to its real
-       column sum once a width is set — so measure again after pinning. */
-    let inner=0;
-    const tables=[...el.querySelectorAll('table')];
-    tables.forEach(tb=>pin(tb,'width',Math.ceil(tb.getBoundingClientRect().width)+'px'));
-    await new Promise(r=>setTimeout(r,20));
-    tables.forEach(tb=>{
-      const tw=Math.ceil(tb.getBoundingClientRect().width);
-      tb.style.width=tw+'px';
-      pin(tb,'minWidth',tw+'px'); pin(tb,'maxWidth',tw+'px');
-      inner=Math.max(inner,tw);
-    });
-    const cs=getComputedStyle(el);
-    const pad=parseFloat(cs.paddingLeft||0)+parseFloat(cs.paddingRight||0);
-    const w=inner?Math.max(520,inner+pad):el.scrollWidth;
-    pin(el,'width',w+'px'); pin(el,'maxWidth','none');
-    await new Promise(r=>setTimeout(r,30));
-    const hgt=el.scrollHeight;
+    const w=el.scrollWidth, hgt=el.scrollHeight;
+    el.style.width=w+'px';
     const scale=Math.min(size||1.5,12000/w);
-    const canvas=await html2canvas(el,{scale,backgroundColor:'#ffffff',logging:false,windowWidth:w+80,windowHeight:hgt+80});
+    const canvas=await html2canvas(el,{scale,backgroundColor:'#ffffff',windowWidth:w+80,windowHeight:hgt+80});
     const name='moonshot-'+t.name+'-'+today();
     if(pdf){
       const {jsPDF}=window.jspdf;
@@ -1705,7 +1661,8 @@ async function exportImage(pdf,size){
       a.href=canvas.toDataURL('image/png');a.download=name+'.png';a.click();
     }
   }catch(e){toast('Export failed: '+e.message);}
-  undo.forEach(([node,prop,val])=>{node.style[prop]=val;});
+  el.style.width=prevW;
+  wrap.cleanup();
   document.body.classList.remove('exporting');
 }
 </script>
@@ -1776,9 +1733,8 @@ function wire(){
     markDirty(); render();
   });
   on('cpAddSug',()=>{
-    const nw=dayTypeRaw('noworks')?'noworks':null;   // never stamp a type that isn't there
     (DB.suggestedHolidays||[]).forEach(s=>{
-      if(!holidayOn(s.date))DB.holidays.push({date:s.date,label:nw?dayType(nw).name.toUpperCase():'',typeId:nw});
+      if(!holidayOn(s.date))DB.holidays.push({date:s.date,label:'NON-WORKING DAY',typeId:'noworks'});
     });
     DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
     DB.suggestedHolidays=[];
@@ -1848,14 +1804,18 @@ function wire(){
     const from=document.querySelector(`[data-htfrom="${tid}"]`).value;
     const to=document.querySelector(`[data-htto="${tid}"]`).value;
     if(!from){toast('Pick a date first');return;}
-    if(!dayTypeRaw(tid))return;
     const dates=to&&to>from?range(from,to):[from];
+    const nm=dayType(tid).name;
     dates.forEach(d=>{
       DB.holidays=DB.holidays.filter(x=>x.date!==d);
-      DB.holidays.push({date:d,label:dayType(tid).name.toUpperCase(),typeId:tid});
+      DB.holidays.push({date:d,label:nm?nm.toUpperCase():'',typeId:tid});
     });
     DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
     markDirty(); render();
+  });
+  document.querySelectorAll('[data-hset]').forEach(s=>s.onchange=()=>{
+    const x=holidayOn(s.dataset.hset);
+    if(x){ x.typeId=s.value||null; x.label=x.typeId?dayType(x.typeId).name.toUpperCase():''; markDirty(); render(); }
   });
   document.querySelectorAll('[data-htdel]').forEach(b=>b.onclick=()=>{
     const d=b.dataset.htdel;
@@ -1865,40 +1825,27 @@ function wire(){
   });
 
   on('dtAdd',async()=>{
-    // an empty name is allowed: those days render as a plain coloured column
-    const name=await uiPrompt('',{title:'Add day type',placeholder:'e.g. Stock Count — leave blank for no label',allowEmpty:true});
+    const name=await uiPrompt('Leave the name empty for a day type that blocks work without showing a label.',
+      {title:'Add day type',placeholder:'e.g. Stock Count',ok:'Add',allowEmpty:true});
     if(name===null)return;
-    // the legend tells day types apart by colour, so don't hand out a duplicate
-    const taken=new Set(DB.dayTypes.map(t=>(t.color||'').toLowerCase()));
-    const color=DT_PALETTE.find(c=>!taken.has(c))||DT_PALETTE[DB.dayTypes.length%DT_PALETTE.length];
-    DB.dayTypes.push({id:uid('d'),name,color,text:'#ffffff'});
+    DB.dayTypes.push({id:uid('d'),name:name||'',color:'#607D8B',text:'#ffffff'});
     markDirty(); render();
   });
-  document.querySelectorAll('[data-dcol]').forEach(i=>i.onchange=()=>{
-    const d=dayTypeRaw(i.dataset.dcol); if(d){d.color=i.value;markDirty();render();}
-  });
-  document.querySelectorAll('[data-dname]').forEach(i=>i.onchange=()=>{
-    const d=dayTypeRaw(i.dataset.dname); if(!d)return;
-    d.name=i.value.trim();
-    DB.holidays.forEach(h=>{if(h.typeId===d.id)h.label=holLabel(h);});
-    markDirty(); render();
-  });
+  document.querySelectorAll('[data-dcol]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dcol).color=i.value;markDirty();render();});
+  document.querySelectorAll('[data-dname]').forEach(i=>i.onchange=()=>{const d=dayType(i.dataset.dname);if(d.id){d.name=i.value.trim();markDirty();render();}});
   document.querySelectorAll('[data-ddel]').forEach(b=>b.onclick=async()=>{
-    const d=dayTypeRaw(b.dataset.ddel); if(!d)return;
-    const days=DB.holidays.filter(h=>h.typeId===d.id);
-    const nm=d.name?esc(d.name):'this day type';
-    if(days.length){
-      const ans=await uiConfirm(
-        `<b>${days.length} marked day${days.length===1?'':'s'}</b> use ${nm}: ${days.slice(0,8).map(h=>fmt(h.date)).join(', ')}${days.length>8?'…':''}.
-         <br><br>Delete those days as well, or keep them marked with no type?`,
-        {title:'Delete day type',ok:'Delete the days',alt:'Keep as untyped',cancel:'Cancel',danger:true});
-      if(!ans)return;
-      if(ans===true){
-        const dates=new Set(days.map(h=>h.date));
+    const d=dayType(b.dataset.ddel);
+    const used=DB.holidays.filter(h=>h.typeId===d.id);
+    if(used.length){
+      const drop=await uiConfirm(
+        `<b>${used.length} marked day${used.length===1?'':'s'}</b> use “${esc(d.name||'(no label)')}”.<br><br>Remove those days from the calendar too, or keep them marked with no type?`,
+        {title:'Delete day type',ok:'Remove the days',cancel:'Keep them, no type'});
+      if(drop){
+        const dates=new Set(used.map(h=>h.date));
         DB.holidays=DB.holidays.filter(h=>!dates.has(h.date));
         DB.outlets.forEach(o=>o.worksOn=(o.worksOn||[]).filter(x=>!dates.has(x)));
       }else{
-        DB.holidays.forEach(h=>{if(h.typeId===d.id){h.typeId=null;h.label='';}});
+        used.forEach(h=>{h.typeId=null;h.label='';});
       }
     }
     DB.dayTypes=DB.dayTypes.filter(x=>x.id!==d.id);
