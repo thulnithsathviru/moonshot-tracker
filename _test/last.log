@@ -1,0 +1,115 @@
+outlets: 20 tasks: 594 dayTypes: poya,public,stock,noworks,note holidays: 6
+legend outlet: Gamsabha
+legend: Poya Day
+  1 outlets → table 370px, 2 cols, head=101,337 body=101,337
+  3 outlets → table 634px, 4 cols, head=52,288,420,552 body=52,288,420,552
+  20 outlets → table 2878px, 21 cols, head=52,288,420,552,684,816,948,1080,1212,1344,1476,1608,1740,1872,2004,2136,2268,2400,2532,2664,2796 body=52,288,420,552,684,816,948,1080,1212,1344,1476,1608,1740,1872,2004,2136,2268,2400,2532,2664,2796
+cp export geometry: {"elW":1439,"tblW":1439,"elH":393,"legendInside":true,"lastColInside":true,"legendBelowChart":true}
+cdn libs: {"xlsx":"object","h2c":"function","jspdf":"object","excel":"object"}
+downloaded: matrix-1-outlets.png, matrix-20-outlets.png, matrix-3-outlets.png, moonshot-calendar-2026-08-02.png, moonshot-critical-path-gamsabha-2026-08-02.pdf, moonshot-critical-path-gamsabha-2026-08-02.png, moonshot-critical-path-gamsabha-2026-08-02.xlsx
+critical-path PNG: 1439x394
+
+--- PASS ---
+  ✓ cloud is unreachable in the test (no writes to live data) — err
+  ✓ booted — 20
+  ✓ dayType(unknown) is the no-type object
+  ✓ orphan typeIds cleared at boot
+  ✓ day whose type vanished shows no other type name
+  ✓ [milestones] no "tick Milestone to give a cat" — still present
+  ✓ [milestones] no "every outlet’s chart recalcu" — still present
+  ✓ [milestones] no "and every outlet" — still present
+  ✓ [milestones] no "in the programme — rename" — still present
+  ✓ [milestones] no "assign once, applies everywh" — still present
+  ✓ [milestones] no "A safety copy of everything" — still present
+  ✓ [milestones] no "works through:" — still present
+  ✓ [milestones] no "Each row is a category" — still present
+  ✓ [milestones] no "Blocks work, no label" — still present
+  ✓ [milestones] no descriptive subtitles left
+  ✓ [calendar] no "tick Milestone to give a cat" — still present
+  ✓ [calendar] no "every outlet’s chart recalcu" — still present
+  ✓ [calendar] no "and every outlet" — still present
+  ✓ [calendar] no "in the programme — rename" — still present
+  ✓ [calendar] no "assign once, applies everywh" — still present
+  ✓ [calendar] no "A safety copy of everything" — still present
+  ✓ [calendar] no "works through:" — still present
+  ✓ [calendar] no "Each row is a category" — still present
+  ✓ [calendar] no "Blocks work, no label" — still present
+  ✓ [calendar] no descriptive subtitles left
+  ✓ [critical] no "tick Milestone to give a cat" — still present
+  ✓ [critical] no "every outlet’s chart recalcu" — still present
+  ✓ [critical] no "and every outlet" — still present
+  ✓ [critical] no "in the programme — rename" — still present
+  ✓ [critical] no "assign once, applies everywh" — still present
+  ✓ [critical] no "A safety copy of everything" — still present
+  ✓ [critical] no "works through:" — still present
+  ✓ [critical] no "Each row is a category" — still present
+  ✓ [critical] no "Blocks work, no label" — still present
+  ✓ [critical] no descriptive subtitles left
+  ✓ [manage] no "tick Milestone to give a cat" — still present
+  ✓ [manage] no "every outlet’s chart recalcu" — still present
+  ✓ [manage] no "and every outlet" — still present
+  ✓ [manage] no "in the programme — rename" — still present
+  ✓ [manage] no "assign once, applies everywh" — still present
+  ✓ [manage] no "A safety copy of everything" — still present
+  ✓ [manage] no "works through:" — still present
+  ✓ [manage] no "Each row is a category" — still present
+  ✓ [manage] no "Blocks work, no label" — still present
+  ✓ [manage] no descriptive subtitles left
+  ✓ month toolbar reads ‹ [month] › then Today — day>week>month>calPrev>calJumpM>calNext>calToday
+  ✓ week view keeps a date picker
+  ✓ ‹ › still step
+  ✓ active tab pill is green — rgb(80, 147, 83)
+  ✓ Export button is deep green — rgb(61, 114, 64)
+  ✓ no black backgrounds left on interactive chrome
+  ✓ an outlet window contains marked days
+  ✓ legend rendered on Critical Path — {"n":1,"txt":"Poya Day","inExport":true}
+  ✓ legend is inside the export target
+  ✓ exportTarget() contains the legend
+  ✓ matrix header/body aligned at 1 outlet(s) — {"hx":[101,337],"bx":[101,337],"tw":370,"screenW":370,"cols":2}
+  ✓ matrix columns not squeezed at 1 outlet(s) — 370 vs expected 370
+  ✓ matrix on screen matches export width at 1 outlet(s) — screen 370 vs export 370
+  ✓ matrix header/body aligned at 3 outlet(s) — {"hx":[52,288,420,552],"bx":[52,288,420,552],"tw":634,"screenW":634,"cols":4}
+  ✓ matrix columns not squeezed at 3 outlet(s) — 634 vs expected 634
+  ✓ matrix on screen matches export width at 3 outlet(s) — screen 634 vs export 634
+  ✓ matrix header/body aligned at 20 outlet(s) — {"hx":[52,288,420,552,684,816,948,1080,1212,1344,1476,1608,1740,1872,2004,2136,2268,2400,2532,2664,2796],"bx":[52,288,420,552,684,816,948,1080,1212,1344,1476,1608,1740,1872,2004,2136,2268,2400,2532,2664,2796],"tw":2878,"screenW":2878,"cols":21}
+  ✓ matrix columns not squeezed at 20 outlet(s) — 2878 vs expected 2878
+  ✓ matrix on screen matches export width at 20 outlet(s) — screen 2878 vs export 2878
+  ✓ no outlet header name wraps mid-word
+  ✓ no outlet header name overflows its cell
+  ✓ header names sit centred in the cell
+  ✓ export wrapper spans the whole chart — {"elW":1439,"tblW":1439,"elH":393,"legendInside":true,"lastColInside":true,"legendBelowChart":true}
+  ✓ last day column is inside the capture — {"elW":1439,"tblW":1439,"elH":393,"legendInside":true,"lastColInside":true,"legendBelowChart":true}
+  ✓ legend sits inside the capture, under the chart — {"elW":1439,"tblW":1439,"elH":393,"legendInside":true,"lastColInside":true,"legendBelowChart":true}
+  ✓ Excel sheet carries the day-type legend — {"outlet":"Duplication","want":["Poya Day"],"head":true,"missing":[]}
+  ✓ PNG + PDF + XLSX downloaded — matrix-1-outlets.png,matrix-20-outlets.png,matrix-3-outlets.png,moonshot-calendar-2026-08-02.png,moonshot-critical-path-gamsabha-2026-08-02.pdf,moonshot-critical-path-gamsabha-2026-08-02.png,moonshot-critical-path-gamsabha-2026-08-02.xlsx
+  ✓ matrix-1-outlets.png is non-empty — 52671 bytes
+  ✓ matrix-20-outlets.png is non-empty — 273875 bytes
+  ✓ matrix-3-outlets.png is non-empty — 66693 bytes
+  ✓ moonshot-calendar-2026-08-02.png is non-empty — 598329 bytes
+  ✓ moonshot-critical-path-gamsabha-2026-08-02.pdf is non-empty — 142543 bytes
+  ✓ moonshot-critical-path-gamsabha-2026-08-02.png is non-empty — 137927 bytes
+  ✓ moonshot-critical-path-gamsabha-2026-08-02.xlsx is non-empty — 8846 bytes
+  ✓ matrix PNG at 1 outlet(s) holds the whole table — 520x611, expected 520 wide
+  ✓ matrix PNG at 3 outlet(s) holds the whole table — 686x611, expected 686 wide
+  ✓ matrix PNG at 20 outlet(s) holds the whole table — 2930x647, expected 2930 wide
+  ✓ critical-path PNG is wider than the viewport slice
+  ✓ export cleaned up after itself
+  ✓ no hard-coded "No type" row
+  ✓ All marked days card lists every holiday — 6 holidays
+  ✓ delete-type dialog offers a third choice — {"hasAlt":true,"n":3,"tot":6,"left":6,"typed":0,"types":false,"native":false}
+  ✓ "keep as untyped" keeps the days, drops the type — {"hasAlt":true,"n":3,"tot":6,"left":6,"typed":0,"types":false,"native":false}
+  ✓ kept days render with no borrowed label
+  ✓ "delete the days" removes exactly those days — {"n":1,"tot":6,"left":5,"worksOn":18}
+  ✓ marked day removable from Setup
+  ✓ day type with no name is allowed
+  ✓ non-empty prompt still works
+  ✓ new day types get distinct colours — Stock Count Programme #9a5b18, No Work Day #5b4b8a, Note #1f6f8b, (no label) #4c5566, Audit Day #a3324a
+  ✓ cancelling Add day type adds nothing
+  ✓ no native dialog fired during any flow — []
+  ✓ no native confirm/prompt/alert call sites in source
+  ✓ console clean — []
+
+98 passed, 0 failed
+
+console tail:
+  log:network Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:8731/favicon.ico
