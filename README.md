@@ -84,13 +84,16 @@ sign up" toggle is irrelevant here since nobody signs in — leave it off.)
 - **Special days** are marked per type in Setup — add one day or a from–to range and every
   outlet's chart recalculates. Clicking a date header on a Critical Path does the same
   thing, and is also where an outlet gets its **works-anyway** exception.
-- **Work days are picked, not typed.** On the chart, click cells to add or remove the exact
-  days a task runs — start and end set themselves, and gaps between picked days are simply
-  days the work doesn't carry. The chart extends a little past the schedule so tasks can
-  grow.
+- **The Edit switch (top bar) guards all editing.** Off, the tracker is view-only: chart
+  clicks won't disturb tasks, and clicking anywhere in a chart column opens the special-day
+  editor for that date instead. On, the frozen columns become editable and chart clicks
+  pick the exact days a task runs — start and end set themselves, and gaps between picked
+  days are simply days the work doesn't carry.
 - **Export** (top bar) renders the current page — the complete table, including everything
   scrolled out of view — as a PNG or PDF.
-- **Backup** (Setup page) downloads a full safety copy; restore replaces the live data.
+- **Backup** (Setup page) downloads a full safety copy, exports every critical path as an
+  Excel workbook (one sheet per outlet, in the same shape the importer reads), and can
+  restore from a backup file — restoring replaces the live data.
 
 ### Who can access — read this once
 
