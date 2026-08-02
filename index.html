@@ -134,7 +134,7 @@ table.mtx tbody tr:nth-child(even) td{background:#FAFAFB}
 table.mtx tbody td.lead{text-align:left;font-weight:600;color:var(--ink);padding:0 14px 0 16px;letter-spacing:-.012em;font-size:13px;background:var(--surface-2);border-right:2px solid var(--line-2);white-space:nowrap}
 table.mtx tbody tr:nth-child(even) td.lead{background:#F0F0F3}
 table.mtx tbody td.lead .num{color:var(--ink-3);font-weight:600;margin-right:11px;font-size:11px;opacity:.6;font-variant-numeric:tabular-nums}
-table.mtx tbody td.lead .cdot{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:9px;vertical-align:1px}
+
 table.mtx tbody td .dt{display:inline-block;min-width:44px;padding:6px 5px;border-radius:7px;letter-spacing:-.02em;line-height:1.3;font-size:12.5px}
 table.mtx tbody td .dt.rng{font-size:12px;white-space:normal}
 table.mtx tbody td .dt.pick{cursor:pointer}
@@ -196,8 +196,10 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 /* exporting: neutralise sticky so the whole table rasterises flat */
 .exporting .gt .fc,.exporting .gt thead th,.exporting .gt thead .fc{position:static!important}
 .exporting .gantt{max-height:none!important;overflow:visible!important}
-.exporting .mtx-outer{overflow:visible!important;padding:26px!important}
-.exporting table.mtx{table-layout:auto!important;width:auto!important;margin:0!important}
+/* shrink the slide to its table so the heading block lines up with the columns */
+.exporting .mtx-outer{overflow:visible!important;padding:26px!important;display:inline-block!important;width:max-content!important;max-width:none!important}
+.exporting table.mtx{table-layout:auto!important;width:100%!important;margin:0!important}
+.exporting .slide-head{width:100%}
 .exporting table.mtx th,.exporting table.mtx td{white-space:nowrap}
 .exporting table.mtx th.lead,.exporting table.mtx td.lead{white-space:nowrap;width:auto!important}
 .exporting .cplegend{break-inside:avoid}
@@ -321,7 +323,6 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
     <div class="spacer"></div>
     <nav class="seg" id="tabs"></nav>
     <div class="spacer"></div>
-    <label class="swt" title="Turn on to edit tasks, days and dates"><input type="checkbox" id="editSwitch"><span class="knob"></span>Edit</label>
     <button class="btn sm ghost" id="btnImport">Import Excel</button>
     <button class="btn sm dark" id="btnExport">Export</button>
   </div>
@@ -429,12 +430,37 @@ function handoverDate(o){
   if(h.length) return h.map(t=>t.end).sort().pop();
   return outletSpan(o)[1];
 }
-/** A milestone is a category: its range spans every task of that category. */
-function msRange(o,cid){
+/** A milestone is a category. Its worked days are the union of its tasks' active
+    days, grouped into contiguous runs so pauses show as separate ranges. */
+function msSegments(o,cid){
   const ts=o.tasks.filter(t=>t.cat===cid);
   if(!ts.length) return null;
-  const s=ts.map(t=>t.start).sort()[0], e=ts.map(t=>t.end).sort().pop();
-  return {start:s,end:e,n:ts.length};
+  const set=new Set();
+  ts.forEach(t=>activeDays(o,t).forEach(d=>set.add(d)));
+  const days=[...set].sort();
+  if(!days.length) return null;
+  const segs=[]; let a=days[0], p=days[0];
+  for(let i=1;i<days.length;i++){
+    const d=days[i];
+    if(d===addDays(p,1)) p=d;
+    else { segs.push([a,p]); a=d; p=d; }
+  }
+  segs.push([a,p]);
+  return {segs,n:ts.length,start:days[0],end:days[days.length-1]};
+}
+/** "3–4 Aug & 7–10 Aug" · "3 Aug, 7–10 Aug & 14 Aug" */
+function fmtSegments(segs){
+  const parts=segs.map(([a,b])=>fmtRange(a,b));
+  if(parts.length===1) return parts[0];
+  if(parts.length===2) return parts.join(' & ');
+  return parts.slice(0,-1).join(', ')+' & '+parts[parts.length-1];
+}
+/** Outlets ordered by launch date, falling back to handover. */
+function outletsOrdered(list){
+  return [...(list||DB.outlets)].sort((a,b)=>{
+    const ka=a.launch||handoverDate(a)||'9999', kb=b.launch||handoverDate(b)||'9999';
+    return ka===kb?a.name.localeCompare(b.name):ka.localeCompare(kb);
+  });
 }
 /** Central task-name → category map, applied across every outlet. */
 function applyTaskMap(){
@@ -703,30 +729,29 @@ function outletChips(){
   return `<div class="chips">
     <button class="fchip on" id="outAll" style="color:var(--ink-2)"><i></i>All</button>
     <button class="fchip on" id="outNone" style="color:var(--ink-2)"><i></i>None</button>
-    ${DB.outlets.map(o=>`<button class="fchip ${UI.outlets.has(o.id)?'on':''}" data-outsel="${o.id}" style="color:${o.color}"><i></i>${esc(o.name)}</button>`).join('')}
+    ${outletsOrdered().map(o=>`<button class="fchip ${UI.outlets.has(o.id)?'on':''}" data-outsel="${o.id}" style="color:${o.color}"><i></i>${esc(o.name)}</button>`).join('')}
   </div>`;
 }
 
 /* ================== MILESTONES (transposed slide matrix) ================== */
 function viewMilestones(){
   const cats=DB.categories.filter(c=>c.inMilestones);
-  const outs=DB.outlets.filter(o=>UI.outlets.has(o.id));
+  const outs=outletsOrdered(DB.outlets.filter(o=>UI.outlets.has(o.id)));
 
-  const head=outs.map(o=>`<th style="background:${o.color};min-width:96px">
+  const head=outs.map(o=>`<th style="background:${o.color};min-width:104px">
       <span class="oname">${esc(o.name)}</span></th>`).join('');
 
   let body='';
   cats.forEach((c,idx)=>{
     const tds=outs.map(o=>{
-      const r=msRange(o,c.id);
+      const r=msSegments(o,c.id);
       if(!r) return `<td><span class="dt dim">·</span></td>`;
-      const txt=fmtRange(r.start,r.end);
       const done=r.end<today();
-      return `<td><span class="dt ${r.start!==r.end?'rng':''} ${done&&UI.strike?'done':''}"
-        title="${r.n} task${r.n===1?'':'s'} in this category"
-        style="color:${darken(o.color,.30)};font-weight:600">${txt}</span></td>`;
+      return `<td><span class="dt ${r.segs.length>1||r.start!==r.end?'rng':''} ${done&&UI.strike?'done':''}"
+        title="${r.n} task${r.n===1?'':'s'}"
+        style="color:${darken(o.color,.30)};font-weight:600">${fmtSegments(r.segs)}</span></td>`;
     }).join('');
-    body+=`<tr><td class="lead"><span class="num">${String(idx+1).padStart(2,'0')}</span><span class="cdot" style="background:${c.color}"></span>${esc(c.name)}</td>${tds}</tr>`;
+    body+=`<tr><td class="lead"><span class="num">${String(idx+1).padStart(2,'0')}</span>${esc(c.name)}</td>${tds}</tr>`;
   });
 
   if(cats.length){
@@ -735,36 +760,25 @@ function viewMilestones(){
     body+=`<tr class="launch"><td class="lead"><span class="num" style="visibility:hidden">00</span>Launch date</td>`+
       outs.map(o=>{
         const has=!!o.launch;
-        if(!UI.cpEdit) return `<td><span class="dt" style="color:${has?'var(--accent)':'var(--line-2)'};font-weight:${has?700:400}">${has?fmt(o.launch):'·'}</span></td>`;
         return `<td><span class="dt pick" data-launch="${o.id}" title="Click to set"
           style="color:${has?'var(--accent)':'var(--line-2)'};font-weight:${has?700:400}">${has?fmt(o.launch):'·'}</span></td>`;
       }).join('')+`</tr>`;
   }
 
   return `<div class="card">
-    <div class="bar">
-      <div class="chips">${DB.categories.map(c=>
-        `<button class="fchip ${c.inMilestones?'on':''}" data-mscat="${c.id}" style="color:${c.color}"><i></i>${esc(c.name)}</button>`).join('')}</div>
-      <span class="spacer"></span>
-      <button class="btn sm ${UI.strike?'on':''}" id="msStrike" title="Strike through milestones whose last day has passed">Strike past</button>
-    </div>
+    <div class="card-h"><h2>Milestone Matrix</h2><span class="spacer"></span>
+      <button class="btn sm ${UI.strike?'on':''}" id="msStrike">Strike past</button></div>
     <div class="bar">${outletChips()}</div>
     <div class="mtx-outer" id="msSlide" data-keepscroll="ms">
       <div class="slide-head">
         <div><span class="eyebrow">Moonshot Programme</span>
-          <h2>Milestone Matrix</h2>
-</div>
-        <div class="right"><b>${outs.length} outlets</b>${cats.length} of ${DB.categories.length} categories shown</div>
+          <h2>Milestone Matrix</h2></div>
+        <div class="right"><b>${outs.length} outlets</b></div>
       </div>
-      <table class="mtx">
-        <thead><tr><th class="lead" style="width:236px">Milestone</th>${head}</tr></thead>
+      ${cats.length&&outs.length?`<table class="mtx">
+        <thead><tr><th class="lead" style="width:250px">Milestone</th>${head}</tr></thead>
         <tbody>${body}</tbody>
-      </table>
-    </div>
-    <div class="card-b hint" style="border-top:1px solid var(--line)">
-      A cell runs from the first day of the earliest task to the last day of the latest task in that
-      category for the outlet. Use the chips above to choose which categories count as milestones;
-      assign tasks to categories on the Setup page. Click a Launch cell to set the launch date by hand.
+      </table>`:`<div class="hint" style="padding:30px 10px;text-align:center">${cats.length?'No outlets selected.':'No milestone categories selected — choose them on the Setup page.'}</div>`}
     </div>
   </div>`;
 }
@@ -827,7 +841,7 @@ function viewCalendar(){
   if(UI.calMode==='month')[body,title]=calMonth();
   else if(UI.calMode==='week')[body,title]=calWeek();
   else [body,title]=calDay();
-  const legend=DB.outlets.filter(o=>UI.outlets.has(o.id));
+  const legend=outletsOrdered(DB.outlets.filter(o=>UI.outlets.has(o.id)));
   return `<div class="card">
     <div class="card-h"><h2>${title}</h2></div>
     <div class="bar">
@@ -931,15 +945,18 @@ function dayDrill(date){
    (+ Category and row actions when Edit is on). Everything edits inline —
    no popup. The date header row is frozen too and carries the special-day
    labels, so they stay visible however far you scroll. */
-function cpCols(){
+function cpCols(o){
   const MOB=window.innerWidth<860;
+  // wide enough for the longest task name, so descriptions read in full
+  const longest=(o&&o.tasks.length)?Math.max(...o.tasks.map(t=>t.name.length)):24;
+  const nameW=MOB?170:Math.max(240,Math.min(620,Math.round(longest*6.6)+26));
   if(UI.cpEdit)
     return MOB
-      ? [['start','Start',62],['end','End',62],['name','Task',150],['act','',56]]
-      : [['start','Start',68],['end','End',68],['name','Task',290],['resp','Responsible',122],['dept','Dept',100],['act','',70]];
+      ? [['start','Start',62],['end','End',62],['name','Task',nameW],['cat','Category',130],['act','',56]]
+      : [['start','Start',68],['end','End',68],['name','Task',nameW],['cat','Category',150],['resp','Responsible',122],['dept','Dept',100],['act','',70]];
   return MOB
-    ? [['start','Start',62],['end','End',62],['name','Task',150]]
-    : [['start','Start',68],['end','End',68],['name','Task',300],['resp','Responsible',126],['dept','Dept',100]];
+    ? [['start','Start',62],['end','End',62],['name','Task',nameW]]
+    : [['start','Start',68],['end','End',68],['name','Task',nameW],['resp','Responsible',126],['dept','Dept',100]];
 }
 
 function viewCritical(){
@@ -952,7 +969,7 @@ function viewCritical(){
   const ws=addDays(ws0,-3), we=addDays(we0,14);   // padding: room to drag work earlier or later
   const days=range(ws,we);
   const t=today();
-  const cols=cpCols();
+  const cols=cpCols(o);
   const offs=[]; let acc=0;
   cols.forEach(c=>{offs.push(acc);acc+=c[2];});
   const stickyW=acc;
@@ -993,14 +1010,16 @@ function viewCritical(){
       const last=i===cols.length-1?'last':'';
       if(!UI.cpEdit){
         if(key==='name') return `<td class="fc ${last}" style="${left}">
-          <span class="tname" title="${esc(task.name)} — ${esc(c.name)} · ${workDays(o,task)} work day${workDays(o,task)===1?'':'s'}">
-            <span class="catdot" style="background:${c.color};margin-right:6px"></span>${esc(task.name)}</span></td>`;
+          <span class="tname" title="${esc(task.name)} — ${esc(c.name)} · ${workDays(o,task)} work day${workDays(o,task)===1?'':'s'}">${esc(task.name)}</span></td>`;
         if(key==='start') return `<td class="fc mono ${last}" style="${left}">${fmt(task.start)}</td>`;
         if(key==='end')   return `<td class="fc mono ${last}" style="${left}">${fmt(task.end)}</td>`;
         if(key==='resp')  return `<td class="fc wrap ${last}" style="${left}" title="${esc(task.resp||'')}">${esc(task.resp||'')}</td>`;
         if(key==='dept')  return `<td class="fc wrap ${last}" style="${left}" title="${esc(task.dept||'')}">${esc(task.dept||'')}</td>`;
       }else{
-        if(key==='name') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.name)}" data-fname="${task.id}" title="${esc(c.name)}"></td>`;
+        if(key==='name') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.name)}" data-fname="${task.id}"></td>`;
+        if(key==='cat')  return `<td class="fc ${last}" style="${left}"><select data-fcat="${task.id}">
+            <option value="">— none —</option>
+            ${DB.categories.map(x=>`<option value="${x.id}" ${x.id===task.cat?'selected':''}>${esc(x.name)}</option>`).join('')}</select></td>`;
         if(key==='start')return `<td class="fc mono ${last}" style="${left}">${fmt(task.start)}</td>`;
         if(key==='end')  return `<td class="fc mono ${last}" style="${left}">${fmt(task.end)}</td>`;
         if(key==='resp') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.resp)}" placeholder="Udara / Nisal" data-fresp="${task.id}"></td>`;
@@ -1024,6 +1043,7 @@ function viewCritical(){
       <select id="cpOutlet">${DB.outlets.map(x=>`<option value="${x.id}" ${x.id===o.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
       <span class="sub hidesm">${fmtY(ws0)} → ${fmtY(we0)}</span>
       <span class="spacer"></span>
+      <label class="swt" title="Turn on to edit tasks and work days"><input type="checkbox" id="editSwitch" ${UI.cpEdit?'checked':''}><span class="knob"></span>Edit</label>
       ${UI.cpEdit?'<button class="btn sm pri" id="cpAdd">Add task</button>':''}
       <button class="btn sm" id="cpToday">Today</button>
       ${UI.cpEdit?'<button class="btn sm dngr" id="cpDelOut">Delete outlet</button>':''}
@@ -1057,7 +1077,6 @@ function viewCritical(){
       const cats=[...new Set(o.tasks.map(t=>t.cat))].map(id=>cat(id)).filter(Boolean);
       const bits=[
         ...cats.map(c=>`<span class="lg"><i style="background:${c.color}"></i>${esc(c.name)}</span>`),
-        ...(o.tasks.some(t=>!t.cat)?[`<span class="lg"><i style="background:${UNCAT.color}"></i>Uncategorised</span>`]:[]),
         ...[...seen.values()].map(s=>`<span class="lg"><i style="background:${s.color}"></i>${esc(s.name)} <em>${s.n} day${s.n===1?'':'s'}${s.worked?' · works through '+s.worked:''}</em></span>`)
       ];
       return bits.length?`<div class="cplegend" id="cpLegend">${bits.join('')}</div>`:'';
@@ -1166,31 +1185,38 @@ function cpAttachAutoPan(){
   const o=outletOf(UI.outlet); if(!o)return;
   const ws=addDays(outletSpan(o)[0],-3);
   const stickyW=+w.dataset.stickyw||0;
-  const cancel=()=>{cancelAnimationFrame(w._gl);w._gliding=false;clearTimeout(w._pan);};
-  w.addEventListener('wheel',cancel,{passive:true});
-  w.addEventListener('touchstart',cancel,{passive:true});
-  w.addEventListener('pointerdown',cancel,{passive:true});
-  let lastTop=w.scrollTop, lastLeft=w.scrollLeft;
+  let lastTop=w.scrollTop, lastLeft=w.scrollLeft, manual=0;
+  const markManual=()=>{manual=Date.now();};
+  w.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))markManual();},{passive:true});
+  w.addEventListener('touchstart',markManual,{passive:true});
+  w.addEventListener('pointerdown',markManual,{passive:true});
   w.addEventListener('scroll',()=>{
     const dv=w.scrollTop-lastTop, dh=w.scrollLeft-lastLeft;
     lastTop=w.scrollTop; lastLeft=w.scrollLeft;
-    if(dh&&!w._gliding)cancel();        // the user is panning by hand — stay out of the way
+    if(dh&&!dv)markManual();          // the user is panning sideways — stay out of the way
     if(!dv)return;
     clearTimeout(w._pan);
-    w._pan=setTimeout(()=>{             // scrolling has settled
+    w._pan=setTimeout(()=>{
+      if(Date.now()-manual<1200)return;
       const dhc=w.querySelector('th.d.dh'); if(!dhc)return;
       const cellW=dhc.offsetWidth;
       const headH=w.querySelector('thead').offsetHeight;
-      const rows=[...w.querySelectorAll('tbody tr[data-row]')];
-      const top=rows.find(r=>r.offsetTop+r.offsetHeight>w.scrollTop+headH);
-      if(!top)return;
-      const t=o.tasks.find(x=>x.id===top.dataset.row); if(!t)return;
-      const idx=Math.max(0,diffDays(ws,t.start));
-      const barL=stickyW+idx*cellW;
+      const top=w.scrollTop+headH, bot=w.scrollTop+w.clientHeight;
+      // every task visible in the pane right now
+      const vis=[...w.querySelectorAll('tbody tr[data-row]')]
+        .filter(r=>r.offsetTop+r.offsetHeight>top&&r.offsetTop<bot)
+        .map(r=>o.tasks.find(t=>t.id===r.dataset.row)).filter(Boolean);
+      if(!vis.length)return;
+      const first=vis.map(t=>t.start).sort()[0];
+      const lastD=vis.map(t=>t.end).sort().pop();
+      const l=stickyW+Math.max(0,diffDays(ws,first))*cellW;
+      const r=stickyW+(Math.max(0,diffDays(ws,lastD))+1)*cellW;
       const viewL=w.scrollLeft+stickyW, viewR=w.scrollLeft+w.clientWidth;
-      if(barL<viewL||barL>viewR-cellW*3)
-        glideTo(w,Math.max(0,barL-stickyW-cellW*2));
-    },380);
+      if(l>=viewL-1&&r<=viewR+1)return;               // already in view — do nothing
+      const target=Math.max(0,Math.min(l-stickyW-cellW*2,
+        Math.max(0,(l+r)/2-stickyW-(w.clientWidth-stickyW)/2)));
+      w.scrollTo({left:target,behavior:'smooth'});
+    },400);
   });
 }
 </script>
@@ -1207,18 +1233,25 @@ function uniqueTasks(){
   return [...m.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
 function viewManage(){
-  const catRows=DB.categories.map(c=>{
+  const catRows=DB.categories.map((c,i)=>{
     const n=DB.outlets.reduce((a,o)=>a+o.tasks.filter(t=>t.cat===c.id).length,0);
     return `<tr>
+      <td style="white-space:nowrap"><button class="ibtn" data-cup="${c.id}" ${i===0?'disabled style="opacity:.25"':''}>↑</button><button class="ibtn" data-cdn="${c.id}" ${i===DB.categories.length-1?'disabled style="opacity:.25"':''}>↓</button></td>
       <td><input type="color" value="${c.color}" data-ccol="${c.id}"></td>
-      <td><input type="text" value="${esc(c.name)}" data-cname="${c.id}" style="width:100%;min-width:170px"></td>
+      <td><input type="text" value="${esc(c.name)}" data-cname="${c.id}" placeholder="Category name" style="width:100%;min-width:180px"></td>
       <td class="mono">${n}</td>
       <td><label class="cbrow"><input type="checkbox" data-cms="${c.id}" ${c.inMilestones?'checked':''}> Milestone</label></td>
-      <td><button class="ibtn del" data-cdel="${c.id}" title="Delete">✕</button></td>
+      <td><button class="ibtn del" data-cdel="${c.id}">✕</button></td>
     </tr>`;}).join('');
 
   const tasks=uniqueTasks();
-  const tRows=tasks.map(u=>{
+  const filt=UI.tcatFilter||'all';
+  const shown=tasks.filter(u=>{
+    const cur=DB.taskMap[u.key]??null;
+    return filt==='all'||(filt==='none'?!cur:!!cur);
+  });
+  const nUncat=tasks.filter(u=>!(DB.taskMap[u.key]??null)).length;
+  const tRows=shown.map(u=>{
     const cur=DB.taskMap[u.key]??null;
     return `<tr>
       <td style="min-width:260px">${esc(u.name)}</td>
@@ -1231,57 +1264,57 @@ function viewManage(){
 
   const dtRows=DB.dayTypes.map(d=>{
     const dates=DB.holidays.filter(h=>h.typeId===d.id).map(h=>h.date).sort();
-    const chips=dates.map(x=>`<button class="fchip on" data-htdel="${x}" title="Remove ${fmtY(x)}" style="color:${d.color}"><i></i>${fmt(x)} ✕</button>`).join('');
+    const chips=dates.map(x=>`<button class="fchip on" data-htdel="${x}" title="Remove" style="color:${d.color}"><i></i>${fmt(x)} ✕</button>`).join('');
     return `<tr>
       <td><input type="color" value="${d.color}" data-dcol="${d.id}"></td>
       <td style="min-width:150px"><input type="text" value="${esc(d.name)}" data-dname="${d.id}" placeholder="(no label)" style="width:100%"></td>
-      <td style="min-width:280px"><div class="chips" style="margin-bottom:${dates.length?'7px':'0'}">${chips||'<span class="hint">No days marked yet</span>'}</div>
+      <td style="min-width:300px"><div class="chips" style="margin-bottom:${dates.length?'7px':'0'}">${chips||'<span class="hint">No days yet</span>'}</div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <input type="date" data-htfrom="${d.id}">
-          <span class="hint">to</span>
-          <input type="date" data-htto="${d.id}" title="Optional — leave empty for a single day">
-          <button class="btn sm" data-htadd="${d.id}">Add</button>
+          <input type="date" data-htdate="${d.id}">
+          <button class="btn sm" data-htadd="${d.id}">Add day</button>
+          <span class="hint">add as many as you need</span>
         </div></td>
       <td><button class="ibtn del" data-ddel="${d.id}">✕</button></td>
     </tr>`;}).join('');
 
-  const oCards=DB.outlets.map(o=>{
+  const oCards=outletsOrdered().map(o=>{
     const [s,e]=outletSpan(o);
-    const w=(o.worksOn||[]).filter(d=>holidayOn(d)).length;
     return `<div class="ocard">
       <div class="orow">
         <input type="color" value="${o.color}" data-ocol="${o.id}" title="Outlet colour">
         <input type="text" value="${esc(o.name)}" data-oname="${o.id}">
-        <button class="ibtn del" data-odel="${o.id}" title="Delete outlet">✕</button>
+        <button class="ibtn del" data-odel="${o.id}">✕</button>
       </div>
-      <div class="ometa">${o.tasks.length} tasks · ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}${w?'<br>works through '+w+' special day'+(w===1?'':'s'):''}</div>
+      <div class="ometa">${o.tasks.length} tasks · ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}</div>
     </div>`;}).join('');
 
   return `
   <div class="card">
-    <div class="card-h"><h2>Categories</h2>
-      <span class="spacer"></span>
-      <button class="btn sm pri" id="catAdd">Add category</button></div>
+    <div class="card-h"><h2>Categories</h2><span class="spacer"></span>
+      <button class="btn sm pri" id="catAdd">+ Add</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
-      <th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th></th></tr></thead>
-      <tbody>${catRows||'<tr><td colspan="5" class="hint" style="padding:14px">No categories yet.</td></tr>'}</tbody></table></div>
+      <th>Order</th><th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th></th></tr></thead>
+      <tbody>${catRows||'<tr><td colspan="6" class="hint" style="padding:14px">None yet — press + Add.</td></tr>'}</tbody></table></div>
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Task categorisation</h2>
-      </div>
-    <div class="scroll" style="max-height:440px"><table class="tbl"><thead><tr>
+    <div class="card-h"><h2>Task categorisation</h2><span class="spacer"></span>
+      <div class="chips">
+        <button class="fchip ${filt==='all'?'on':''}" data-tfilt="all" style="color:var(--ink-2)"><i></i>All ${tasks.length}</button>
+        <button class="fchip ${filt==='none'?'on':''}" data-tfilt="none" style="color:var(--warn)"><i></i>Uncategorised ${nUncat}</button>
+        <button class="fchip ${filt==='some'?'on':''}" data-tfilt="some" style="color:var(--ok)"><i></i>Categorised ${tasks.length-nUncat}</button>
+      </div></div>
+    <div class="scroll" style="max-height:440px" data-keepscroll="tcat"><table class="tbl"><thead><tr>
       <th>Task</th><th>Outlets</th><th>Category</th></tr></thead>
-      <tbody>${tRows}</tbody></table></div>
+      <tbody>${tRows||'<tr><td colspan="3" class="hint" style="padding:14px">Nothing here.</td></tr>'}</tbody></table></div>
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Special days</h2>
-      <span class="spacer"></span>
-      <button class="btn sm pri" id="dtAdd">Add day type</button></div>
+    <div class="card-h"><h2>Special days</h2><span class="spacer"></span>
+      <button class="btn sm pri" id="dtAdd">+ Add</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
       <th></th><th>Type</th><th>Days</th><th></th></tr></thead>
-      <tbody>${dtRows}</tbody></table></div>
+      <tbody>${dtRows||'<tr><td colspan="4" class="hint" style="padding:14px">None yet — press + Add.</td></tr>'}</tbody></table></div>
   </div>
 
   <div class="card">
@@ -1743,6 +1776,12 @@ function wire(){
     else DB.taskMap[k]=t.cat;                    // new name → remember its category
   },true);
   bindF('[data-fresp]',(t,v)=>{t.resp=v.trim();},false);
+  document.querySelectorAll('[data-fcat]').forEach(s=>s.onchange=()=>{
+    const t=task(s.dataset.fcat); if(!t)return;
+    t.cat=s.value||null;
+    DB.taskMap[t.name.trim().toLowerCase()]=t.cat;   // keep the central map in step
+    applyTaskMap(); markDirty(); render();
+  });
   bindF('[data-fdept]',(t,v)=>{t.dept=v.trim();},false);
   document.querySelectorAll('[data-tup]').forEach(b=>b.onclick=()=>moveTask(b.dataset.tup,-1));
   document.querySelectorAll('[data-tdn]').forEach(b=>b.onclick=()=>moveTask(b.dataset.tdn,1));
@@ -1759,14 +1798,18 @@ function wire(){
   cpAttachAutoPan();
 
   /* ---- setup ---- */
-  on('catAdd',async()=>{
-    const name=await uiPrompt('',{title:'Add category',placeholder:'e.g. Signage Works'});
-    if(!name)return;
-    DB.categories.push({id:uid('c'),name,color:'#5856D6',inMilestones:true,inCalendar:true});
+  on('catAdd',()=>{
+    const PAL=['#0071E3','#34C759','#FF9500','#AF52DE','#FF2D55','#00897B','#A2845E','#5856D6'];
+    DB.categories.push({id:uid('c'),name:'',color:PAL[DB.categories.length%PAL.length],inMilestones:true,inCalendar:true});
     markDirty(); render();
+    const inp=document.querySelector('#app .card:first-child tbody tr:last-child [data-cname]');
+    if(inp)inp.focus();
   });
+  document.querySelectorAll('[data-cup]').forEach(b=>b.onclick=()=>moveCat(b.dataset.cup,-1));
+  document.querySelectorAll('[data-cdn]').forEach(b=>b.onclick=()=>moveCat(b.dataset.cdn,1));
+  document.querySelectorAll('[data-tfilt]').forEach(b=>b.onclick=()=>{UI.tcatFilter=b.dataset.tfilt;render();});
   document.querySelectorAll('[data-ccol]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.ccol);if(c){c.color=i.value;markDirty();render();}});
-  document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.cname);if(c){c.name=i.value.trim()||'Category';markDirty();render();}});
+  document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.cname);if(c){c.name=i.value.trim();markDirty();render();}});
   document.querySelectorAll('[data-cms]').forEach(i=>i.onchange=()=>{cat(i.dataset.cms).inMilestones=i.checked;markDirty();render();});
   document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=async()=>{
     const c=cat(b.dataset.cdel); if(!c)return;
@@ -1786,15 +1829,12 @@ function wire(){
   // special-day dates per type
   document.querySelectorAll('[data-htadd]').forEach(b=>b.onclick=()=>{
     const tid=b.dataset.htadd;
-    const from=document.querySelector(`[data-htfrom="${tid}"]`).value;
-    const to=document.querySelector(`[data-htto="${tid}"]`).value;
-    if(!from){toast('Pick a date first');return;}
-    const dates=to&&to>from?range(from,to):[from];
+    const inp=document.querySelector(`[data-htdate="${tid}"]`);
+    const d=inp.value;
+    if(!d){toast('Pick a date first');return;}
     const nm=dayType(tid).name;
-    dates.forEach(d=>{
-      DB.holidays=DB.holidays.filter(x=>x.date!==d);
-      DB.holidays.push({date:d,label:nm?nm.toUpperCase():'',typeId:tid});
-    });
+    DB.holidays=DB.holidays.filter(x=>x.date!==d);
+    DB.holidays.push({date:d,label:nm?nm.toUpperCase():'',typeId:tid});
     DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
     markDirty(); render();
   });
@@ -1805,12 +1845,11 @@ function wire(){
     markDirty(); render();
   });
 
-  on('dtAdd',async()=>{
-    const name=await uiPrompt('Leave the name empty for a day type that blocks work without showing a label.',
-      {title:'Add day type',placeholder:'e.g. Stock Count',ok:'Add',allowEmpty:true});
-    if(name===null)return;
-    DB.dayTypes.push({id:uid('d'),name:name||'',color:'#607D8B',text:'#ffffff'});
+  on('dtAdd',()=>{
+    DB.dayTypes.push({id:uid('d'),name:'',color:'#607D8B',text:'#ffffff'});
     markDirty(); render();
+    const inp=[...document.querySelectorAll('[data-dname]')].pop();
+    if(inp)inp.focus();
   });
   document.querySelectorAll('[data-dcol]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dcol).color=i.value;markDirty();render();});
   document.querySelectorAll('[data-dname]').forEach(i=>i.onchange=()=>{const d=dayType(i.dataset.dname);if(d.id){d.name=i.value.trim();markDirty();render();}});
@@ -1828,12 +1867,11 @@ function wire(){
     markDirty(); render();
   });
 
-  on('dtAdd',async()=>{
-    const name=await uiPrompt('Leave the name empty for a day type that blocks work without showing a label.',
-      {title:'Add day type',placeholder:'e.g. Stock Count',ok:'Add',allowEmpty:true});
-    if(name===null)return;
-    DB.dayTypes.push({id:uid('d'),name:name||'',color:'#607D8B',text:'#ffffff'});
+  on('dtAdd',()=>{
+    DB.dayTypes.push({id:uid('d'),name:'',color:'#607D8B',text:'#ffffff'});
     markDirty(); render();
+    const inp=[...document.querySelectorAll('[data-dname]')].pop();
+    if(inp)inp.focus();
   });
   document.querySelectorAll('[data-dcol]').forEach(i=>i.onchange=()=>{dayType(i.dataset.dcol).color=i.value;markDirty();render();});
   document.querySelectorAll('[data-dname]').forEach(i=>i.onchange=()=>{const d=dayType(i.dataset.dname);if(d.id){d.name=i.value.trim();markDirty();render();}});
@@ -1857,9 +1895,10 @@ function wire(){
   on('bkXlsx',()=>exportExcel('all'));
   on('bkUp',()=>$('fileJs').click());
 
-  /* ---- persistent chrome ---- */
   const sw=$('editSwitch');
-  if(sw){ sw.checked=UI.cpEdit; sw.onchange=()=>{UI.cpEdit=sw.checked;render();}; }
+  if(sw){ sw.onchange=()=>{UI.cpEdit=sw.checked;render();}; }
+
+  /* ---- persistent chrome ---- */
   on('btnExport',exportMenu);
   on('btnImport',()=>$('fileXl').click());
   const fx=$('fileXl');
@@ -1883,6 +1922,12 @@ function wire(){
   };}
 }
 
+function moveCat(id,d){
+  const i=DB.categories.findIndex(c=>c.id===id), j=i+d;
+  if(i<0||j<0||j>=DB.categories.length)return;
+  [DB.categories[i],DB.categories[j]]=[DB.categories[j],DB.categories[i]];
+  markDirty(); render();
+}
 function moveTask(taskId,d){
   const o=outletOf(UI.outlet);
   const i=o.tasks.findIndex(x=>x.id===taskId),j=i+d;
