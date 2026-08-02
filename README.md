@@ -73,19 +73,24 @@ sign up" toggle is irrelevant here since nobody signs in — leave it off.)
 ### Day-to-day
 
 - **Everything autosaves.** Edit anywhere and the change publishes to the database within a
-  second or two — the status bar shows "Saving…" then "All changes saved". Other devices
-  pick it up on their next open or refresh. There is no Save button to remember.
-- **New outlets or a revised critical path** — press **Import Excel** (top bar), pick the
-  sheets, done. Re-importing an existing outlet refreshes its **dates** while keeping your
-  category and milestone choices for tasks whose names are unchanged.
-- **Editing the critical path** — turn on **Edit** and every task's name, dates,
-  responsible people, department and category become editable right in the frozen columns;
-  ◆ flags a task as a milestone. Click a date header to mark a special day (one day or a
-  range) with an optional per-outlet works-anyway exception.
+  second or two — the status bar shows "Saving…" then "All changes saved". There is no
+  Save button.
+- **Categories are managed once, centrally** (Setup → Task categorisation). Every unique
+  task name across all outlets is listed there; pick its category and every outlet updates,
+  and future imports of the same task name land in the right category automatically.
+- **A milestone is a category.** Tick **Milestone** on a category (Setup, or the chips on
+  the Milestones page) and it becomes a row of the matrix; each cell spans from the first
+  to the last day of that category's tasks for the outlet. No per-task flags.
+- **Special days** are marked per type in Setup — add one day or a from–to range and every
+  outlet's chart recalculates. Clicking a date header on a Critical Path does the same
+  thing, and is also where an outlet gets its **works-anyway** exception.
+- **Work days are picked, not typed.** On the chart, click cells to add or remove the exact
+  days a task runs — start and end set themselves, and gaps between picked days are simply
+  days the work doesn't carry. The chart extends a little past the schedule so tasks can
+  grow.
 - **Export** (top bar) renders the current page — the complete table, including everything
   scrolled out of view — as a PNG or PDF.
 - **Backup** (Setup page) downloads a full safety copy; restore replaces the live data.
-  Since anyone with the link can edit, grab a backup before big changes.
 
 ### Who can access — read this once
 
@@ -105,36 +110,29 @@ dates, a **private repo is strongly recommended**.
 
 ## How the pieces work
 
-**Milestones.** The matrix is the slide layout: work packages as numbered rows, outlets as
-coloured columns. Each cell is the **combined range of every milestone-flagged task** in
-that category — e.g. all the flagged Back Wall tasks from 27 Jul to 10 Aug show as
-"27 Jul – 10 Aug". Flag tasks with ◆ on the Critical Path, or press **Edit cells** and pick
-the tasks per cell. The Launch row is set by hand (click a cell). **Strike past** crosses
-out finished milestones. PNG/PDF export from the toolbar.
+**Milestones.** The matrix is the slide layout: milestone categories as numbered rows,
+outlets as coloured columns. Each cell runs from the first day of the earliest task to the
+last day of the latest task in that category for the outlet. Choose which categories count
+via the chips (or Setup); pick which outlets show with the outlet chips. Launch dates are
+set by hand — click a Launch cell.
 
-**Calendar.** Month, week and day views of every outlet at once, chips coloured per outlet.
-Grouped mode collapses each outlet's category into one chip with a task count — but tasks
-that don't belong to a category (Other) always show individually by name. Click any chip
-for the full day breakdown.
+**Calendar.** Month, week and day views, chips coloured per outlet. Categorised tasks group
+into one chip per outlet+category; uncategorised tasks always show individually. Every
+category appears on the calendar.
 
-**Critical Path.** The workbook view, editable. Click a task's ✎ to edit dates, people,
-category, progress; click a cell inside a bar to knock a day out or put it back; click a
-cell beyond the bar to extend it. ◆ toggles the milestone flag.
+**Critical Path.** The workbook view with a frozen pane: Task, Start, End, Responsible and
+Department columns pinned left, the date row (with special-day labels) pinned top. Turn on
+**Edit** to change names, people and departments inline; click chart cells to pick the
+exact work days — dates derive themselves. Scrolling down auto-pans the chart to the rows
+you're looking at.
 
-**Holidays are programme-wide.** Click a date header to mark a day: it lands on the shared
-calendar, so every outlet pauses there and all bars recalculate. If one outlet genuinely
-works that day, tick **"works on this day anyway"** in the same dialog — the exception
-applies only to that outlet, and the chart shows a faint curtain behind its bars. Fully
-blocked days show the solid curtain with the vertical label, exactly like the Excel sheets.
+**Setup.** Categories (with the Milestone tick), the central task-to-category list, special
+days per type, outlet cards, and backup/restore.
 
-**Setup.** Rename/recolour categories, day types, outlets; the whole programme calendar in
-one table, with each date's per-outlet exceptions listed.
-
-**Import.** Press **Import Excel** in the top bar to drop the critical-paths workbook in
-any time. Sheets become outlets; holiday text blocks land on the shared calendar; where a
-sheet shows work on a marked day, that outlet gets the works-anyway exception
-automatically. Re-importing refreshes an existing outlet's **dates** while keeping your
-category and milestone choices for any task whose name hasn't changed.
+**Import.** Press **Import Excel** in the top bar. Sheets become outlets; holiday text
+blocks land on the shared calendar; where a sheet shows work on a marked day, that outlet
+gets the works-anyway exception automatically. Categories come from the central task list —
+re-importing keeps all your choices for any task name it has seen before.
 
 ## Hosting
 

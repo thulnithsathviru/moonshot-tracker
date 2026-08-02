@@ -366,7 +366,9 @@ function darken(hex,f){
 }
 
 /* ---------- lookups ---------- */
-const cat=id=>DB.categories.find(c=>c.id===id)||{id:'other',name:'Other',color:'#C7A500',inCalendar:true,inMilestones:true};
+const cat=id=>id?(DB.categories.find(c=>c.id===id)||null):null;
+const UNCAT={id:null,name:'Uncategorised',color:'#8E8E93',inMilestones:false};
+const catOf=t=>cat(t.cat)||UNCAT;
 const dayType=id=>DB.dayTypes.find(t=>t.id===id)||DB.dayTypes[0];
 const outletOf=id=>DB.outlets.find(o=>o.id===id);
 
@@ -399,13 +401,19 @@ function handoverDate(o){
   if(h.length) return h.map(t=>t.end).sort().pop();
   return outletSpan(o)[1];
 }
-/** All milestone-flagged tasks for an outlet in a category, and their combined range. */
-function msTasks(o,cid){ return o.tasks.filter(t=>t.ms&&t.cat===cid); }
+/** A milestone is a category: its range spans every task of that category. */
 function msRange(o,cid){
-  const ts=msTasks(o,cid);
+  const ts=o.tasks.filter(t=>t.cat===cid);
   if(!ts.length) return null;
   const s=ts.map(t=>t.start).sort()[0], e=ts.map(t=>t.end).sort().pop();
   return {start:s,end:e,n:ts.length};
+}
+/** Central task-name → category map, applied across every outlet. */
+function applyTaskMap(){
+  DB.outlets.forEach(o=>o.tasks.forEach(t=>{
+    const m=DB.taskMap[t.name.trim().toLowerCase()];
+    if(m!==undefined)t.cat=m;
+  }));
 }
 
 /* ---------- storage ---------- */
@@ -516,11 +524,25 @@ function normalise(){
       delete o.holidays;
     }
     o.tasks.forEach(t=>{
-      t.skip=t.skip||[]; t.cat=t.cat||'other'; t.ms=!!t.ms;
+      t.skip=t.skip||[];
+      if(t.cat==='other')t.cat=null;
+      if(t.cat===undefined)t.cat=null;
+      delete t.ms;
       if(t.done===undefined)t.done=null;
       if(!t.id)t.id=uid('t');
     });
   });
+  DB.categories=DB.categories.filter(c=>c.id!=='other');
+  DB.taskMap=DB.taskMap||{};
+  // learn from existing choices, then apply everywhere so same-named tasks agree
+  DB.outlets.forEach(o=>o.tasks.forEach(t=>{
+    const k=t.name.trim().toLowerCase();
+    if(!(k in DB.taskMap))DB.taskMap[k]=t.cat;
+  }));
+  Object.keys(DB.taskMap).forEach(k=>{
+    if(DB.taskMap[k]&&!DB.categories.some(c=>c.id===DB.taskMap[k]))DB.taskMap[k]=null;
+  });
+  applyTaskMap();
   DB.dayTypes.forEach(t=>{delete t.working; if(t.name==='Note (work continues)')t.name='Note';});
   DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
 }
@@ -646,7 +668,7 @@ function viewMilestones(){
       const txt=fmtRange(r.start,r.end);
       const done=r.end<today();
       return `<td><span class="dt ${r.start!==r.end?'rng':''} ${done&&UI.strike?'done':''}"
-        title="${r.n} task${r.n===1?'':'s'} flagged ◆"
+        title="${r.n} task${r.n===1?'':'s'} in this category"
         style="color:${darken(o.color,.30)};font-weight:600">${txt}</span></td>`;
     }).join('');
     body+=`<tr><td class="lead"><span class="num">${String(idx+1).padStart(2,'0')}</span><span class="cdot" style="background:${c.color}"></span>${esc(c.name)}</td>${tds}</tr>`;
@@ -661,7 +683,6 @@ function viewMilestones(){
         style="color:${has?'var(--accent)':'var(--line-2)'};font-weight:${has?700:400}">${has?fmt(o.launch):'·'}</span></td>`;
     }).join('')+`</tr>`;
 
-  const totalMs=outs.reduce((n,o)=>n+o.tasks.filter(t=>t.ms).length,0);
   return `<div class="card">
     <div class="bar">
       <div class="chips">${DB.categories.map(c=>
@@ -674,8 +695,8 @@ function viewMilestones(){
       <div class="slide-head">
         <div><span class="eyebrow">Moonshot Programme</span>
           <h2>Milestone Matrix</h2>
-          <div class="sub">Combined date range of the ◆-flagged tasks in each work package, per outlet</div></div>
-        <div class="right"><b>${outs.length} outlets</b>${totalMs} milestones · ${cats.length} of ${DB.categories.length} categories</div>
+          <div class="sub">Each row is a category; each cell spans that category's tasks for the outlet</div></div>
+        <div class="right"><b>${outs.length} outlets</b>${cats.length} of ${DB.categories.length} categories shown</div>
       </div>
       <table class="mtx">
         <thead><tr><th class="lead" style="width:236px">Milestone</th>${head}</tr></thead>
@@ -683,9 +704,9 @@ function viewMilestones(){
       </table>
     </div>
     <div class="card-b hint" style="border-top:1px solid var(--line)">
-      A cell spans from the first day of the earliest ◆-flagged task to the last day of the latest one in
-      that category. Flag tasks on the Critical Path (turn on <b>Edit</b> and use the ◆ button per row).
-      Click a Launch cell to set the launch date by hand.
+      A cell runs from the first day of the earliest task to the last day of the latest task in that
+      category for the outlet. Use the chips above to choose which categories count as milestones;
+      assign tasks to categories on the Setup page. Click a Launch cell to set the launch date by hand.
     </div>
   </div>`;
 }
@@ -716,7 +737,7 @@ function calItemsOn(date){
   DB.outlets.forEach(o=>{
     if(!UI.outlets.has(o.id)) return;
     o.tasks.forEach(t=>{
-      if(taskOn(o,t,date)) out.push({o,t,c:cat(t.cat)});
+      if(taskOn(o,t,date)) out.push({o,t,c:catOf(t)});
     });
   });
   return out;
@@ -727,7 +748,7 @@ function calChips(date,limit){
   let entries=[];
   const m=new Map();
   items.forEach(({o,t,c})=>{
-    if(c.id==='other'){ entries.push({sort:o.name+'~'+t.name,html:
+    if(!c.id){ entries.push({sort:o.name+'~'+t.name,html:
       `<button class="chip" data-day="${date}" style="background:${o.color}">
         <span class="cn">${esc(t.name)}</span><span class="cp">${esc(o.name)}</span></button>`}); return; }
     const k=o.id+'|'+c.id;
@@ -853,8 +874,8 @@ function cpCols(){
   const MOB=window.innerWidth<860;
   if(UI.cpEdit)
     return MOB
-      ? [['name','Task',146],['start','Start',82],['end','End',82],['act','',64]]
-      : [['name','Task',216],['start','Start',86],['end','End',86],['resp','Responsible',116],['dept','Dept',96],['cat','Category',128],['act','',88]];
+      ? [['name','Task',158],['act','',60]]
+      : [['name','Task',232],['start','Start',74],['end','End',74],['resp','Responsible',126],['dept','Dept',102],['act','',70]];
   return MOB
     ? [['name','Task',168]]
     : [['name','Task',236],['start','Start',74],['end','End',74],['resp','Responsible',126],['dept','Dept',100]];
@@ -866,7 +887,8 @@ function viewCritical(){
     No outlets yet. <button class="btn pri" id="btnImport2">Import a critical path from Excel</button></div></div>`;
   UI.outlet=o.id;
 
-  const [ws,we]=outletSpan(o);
+  const [ws0,we0]=outletSpan(o);
+  const ws=addDays(ws0,-3), we=addDays(we0,14);   // padding: room to drag work earlier or later
   const days=range(ws,we);
   const t=today();
   const cols=cpCols();
@@ -891,7 +913,7 @@ function viewCritical(){
   }).join('');
 
   const rows=o.tasks.map(task=>{
-    const c=cat(task.cat);
+    const c=catOf(task);
     const act=new Set(activeDays(o,task));
     const cells=days.map(d=>{
       const h=holidayOn(d);
@@ -900,7 +922,7 @@ function viewCritical(){
       const first=on&&!act.has(addDays(d,-1)), last=on&&!act.has(addDays(d,1));
       const curtain=h?`<div class="holcurtain ${worked?'soft':''}" style="background:${dayType(h.typeId).color}"></div>`:'';
       return `<td class="d cell ${isWeekend(d)?'we':''}" data-cell="${task.id}" data-d="${d}">
-        ${curtain}${on?`<div class="gbar ${first?'s':''} ${last?'e':''} ${task.ms?'ms':''}" style="--barc:${c.color}"></div>`:''}</td>`;
+        ${curtain}${on?`<div class="gbar ${first?'s':''} ${last?'e':''}" style="--barc:${c.color}"></div>`:''}</td>`;
     }).join('');
 
     const fixed=cols.map((cd,i)=>{
@@ -908,22 +930,20 @@ function viewCritical(){
       const last=i===cols.length-1?'last':'';
       if(!UI.cpEdit){
         if(key==='name') return `<td class="fc ${last}" style="${left}">
-          <span class="tname" title="${esc(task.name)}">${task.ms?'<span class="msflag">◆</span> ':''}${esc(task.name)}</span>
+          <span class="tname" title="${esc(task.name)}">${esc(task.name)}</span>
           <span class="sub2"><span class="catdot" style="background:${c.color};margin-right:4px"></span>${esc(c.name)} · ${workDays(o,task)}d</span></td>`;
         if(key==='start') return `<td class="fc mono ${last}" style="${left}">${fmt(task.start)}</td>`;
         if(key==='end')   return `<td class="fc mono ${last}" style="${left}">${fmt(task.end)}</td>`;
         if(key==='resp')  return `<td class="fc wrap ${last}" style="${left}">${esc(task.resp||'')}</td>`;
         if(key==='dept')  return `<td class="fc wrap ${last}" style="${left}">${esc(task.dept||'')}</td>`;
       }else{
-        if(key==='name') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.name)}" data-fname="${task.id}"></td>`;
-        if(key==='start')return `<td class="fc ${last}" style="${left}"><input type="date" value="${task.start}" data-fstart="${task.id}"></td>`;
-        if(key==='end')  return `<td class="fc ${last}" style="${left}"><input type="date" value="${task.end}" data-fend="${task.id}"></td>`;
+        if(key==='name') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.name)}" data-fname="${task.id}">
+          <span class="sub2" style="display:block;margin-top:2px"><span class="catdot" style="background:${c.color};margin-right:4px"></span>${esc(c.name)}</span></td>`;
+        if(key==='start')return `<td class="fc mono ${last}" style="${left}">${fmt(task.start)}<div class="sub2">auto</div></td>`;
+        if(key==='end')  return `<td class="fc mono ${last}" style="${left}">${fmt(task.end)}<div class="sub2">auto</div></td>`;
         if(key==='resp') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.resp)}" placeholder="Udara / Nisal" data-fresp="${task.id}"></td>`;
         if(key==='dept') return `<td class="fc ${last}" style="${left}"><input type="text" value="${esc(task.dept)}" placeholder="Projects / IT" data-fdept="${task.id}"></td>`;
-        if(key==='cat')  return `<td class="fc ${last}" style="${left}"><select data-fcat="${task.id}">
-            ${DB.categories.map(x=>`<option value="${x.id}" ${x.id===task.cat?'selected':''}>${esc(x.name)}</option>`).join('')}</select></td>`;
         if(key==='act')  return `<td class="fc ${last}" style="${left}"><div class="rowact">
-            <button class="ibtn ${task.ms?'on':''}" data-tms="${task.id}" title="Milestone ◆">◆</button>
             <button class="ibtn" data-tup="${task.id}" title="Move up">↑</button>
             <button class="ibtn" data-tdn="${task.id}" title="Move down">↓</button>
             <button class="ibtn" data-tdup="${task.id}" title="Duplicate">⧉</button>
@@ -935,14 +955,13 @@ function viewCritical(){
   }).join('');
 
   const sug=(DB.suggestedHolidays||[]).filter(s=>!holidayOn(s.date));
-  const ms=o.tasks.filter(x=>x.ms).length;
   const worksHere=(o.worksOn||[]).filter(d=>holidayOn(d));
 
   return `<div class="card">
     <div class="card-h">
       <h2>Critical Path</h2>
       <select id="cpOutlet">${DB.outlets.map(x=>`<option value="${x.id}" ${x.id===o.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
-      <span class="sub hidesm">${fmtY(ws)} → ${fmtY(we)}</span>
+      <span class="sub hidesm">${fmtY(ws0)} → ${fmtY(we0)}</span>
       <span class="spacer"></span>
       <button class="btn sm ${UI.cpEdit?'on':''}" id="cpEdit">${UI.cpEdit?'Done editing':'Edit'}</button>
       <button class="btn sm pri" id="cpAdd">Add task</button>
@@ -952,14 +971,13 @@ function viewCritical(){
     <div class="bar">
       <div class="stat">
         <div><b>${o.tasks.length}</b><span>Tasks</span></div>
-        <div><b>${ms}</b><span>Milestones</span></div>
         <div><b>${days.length}</b><span>Cal. days</span></div>
         <div><b>${days.filter(d=>!blockedOn(o,d)).length}</b><span>Work days</span></div>
         <div><b class="mono" style="font-size:16px">${fmt(handoverDate(o))}</b><span>Handover</span></div>
         ${o.launch?`<div><b class="mono" style="font-size:16px;color:var(--accent)">${fmt(o.launch)}</b><span>Launch</span></div>`:''}
       </div>
       <span class="spacer"></span>
-      <span class="hint hidesm">${UI.cpEdit?'Edit any field in the frozen columns — changes save automatically':'Click a date header to mark a special day · click a chart cell to extend a bar or knock a day out'}</span>
+      <span class="hint hidesm">${UI.cpEdit?'Edit fields in the frozen columns · click chart cells to add or remove work days — dates set themselves':'Click a date header to mark a special day · click a chart cell to add or remove a work day'}</span>
     </div>
     ${worksHere.length?`<div class="card-b" style="padding:10px 20px;border-bottom:1px solid var(--line)">
       <span class="hint"><b>${esc(o.name)} works through:</b> ${worksHere.map(d=>{
@@ -1037,22 +1055,22 @@ function editHoliday(outId,date){
   });
 }
 
-/* --------------- gantt cell click --------------- */
+/* --------------- gantt cell click: toggle a single work day --------------- */
+/* Pick the exact days a task runs — start and end derive themselves, and gaps
+   between picked days are simply days the work doesn't carry. */
 function cellClick(taskId,date){
   const o=outletOf(UI.outlet);
   const t=o.tasks.find(x=>x.id===taskId);
   if(!t)return;
   if(blockedOn(o,date)){ editHoliday(UI.outlet,date); return; }
-  if(date<t.start){t.start=date;t.skip=(t.skip||[]).filter(d=>d>=t.start);}
-  else if(date>t.end){t.end=date;t.skip=(t.skip||[]).filter(d=>d<=t.end);}
-  else{
-    const s=new Set(t.skip||[]);
-    if(s.has(date))s.delete(date);
-    else if(date===t.start){const a=activeDays(o,t);if(a.length>1)t.start=a[1];}
-    else if(date===t.end){const a=activeDays(o,t);if(a.length>1)t.end=a[a.length-2];}
-    else s.add(date);
-    t.skip=[...s].sort();
-  }
+  const S=new Set(activeDays(o,t));
+  if(S.has(date)){
+    if(S.size===1){ toast('A task needs at least one work day — delete the task instead'); return; }
+    S.delete(date);
+  }else S.add(date);
+  const days=[...S].sort();
+  t.start=days[0]; t.end=days[days.length-1];
+  t.skip=range(t.start,t.end).filter(d=>!S.has(d)&&!blockedOn(o,d));
   markDirty(); render();
 }
 
@@ -1061,7 +1079,7 @@ function cpAttachAutoPan(){
   const w=document.getElementById('cpWrap');
   if(!w)return;
   const o=outletOf(UI.outlet); if(!o)return;
-  const [ws]=outletSpan(o);
+  const ws=addDays(outletSpan(o)[0],-3);
   const stickyW=+w.dataset.stickyw||0;
   let lastTop=w.scrollTop;
   w.addEventListener('scroll',()=>{
@@ -1087,25 +1105,54 @@ function cpAttachAutoPan(){
 </script>
 
 <script>
-/* ===================== SETUP: categories, day types, outlets, backup ===================== */
+/* ===================== SETUP: categories, task map, special days, outlets ===================== */
+function uniqueTasks(){
+  const m=new Map();
+  DB.outlets.forEach(o=>o.tasks.forEach(t=>{
+    const k=t.name.trim().toLowerCase();
+    if(!m.has(k))m.set(k,{key:k,name:t.name.trim(),n:0});
+    m.get(k).n++;
+  }));
+  return [...m.values()].sort((a,b)=>a.name.localeCompare(b.name));
+}
 function viewManage(){
   const catRows=DB.categories.map(c=>{
     const n=DB.outlets.reduce((a,o)=>a+o.tasks.filter(t=>t.cat===c.id).length,0);
-    const m=DB.outlets.reduce((a,o)=>a+o.tasks.filter(t=>t.cat===c.id&&t.ms).length,0);
     return `<tr>
       <td><input type="color" value="${c.color}" data-ccol="${c.id}"></td>
       <td><input type="text" value="${esc(c.name)}" data-cname="${c.id}" style="width:100%;min-width:170px"></td>
-      <td class="mono">${n}</td><td class="mono">${m}</td>
-      <td><label class="cbrow"><input type="checkbox" data-cms="${c.id}" ${c.inMilestones?'checked':''}> Show</label></td>
+      <td class="mono">${n}</td>
+      <td><label class="cbrow"><input type="checkbox" data-cms="${c.id}" ${c.inMilestones?'checked':''}> Milestone</label></td>
       <td><button class="ibtn del" data-cdel="${c.id}" title="Delete">✕</button></td>
     </tr>`;}).join('');
 
-  const dtRows=DB.dayTypes.map(d=>`<tr>
+  const tasks=uniqueTasks();
+  const tRows=tasks.map(u=>{
+    const cur=DB.taskMap[u.key]??null;
+    return `<tr>
+      <td style="min-width:260px">${esc(u.name)}</td>
+      <td class="mono">${u.n}</td>
+      <td><select data-tmap="${esc(u.key)}" style="min-width:190px">
+        <option value="">— Uncategorised —</option>
+        ${DB.categories.map(c=>`<option value="${c.id}" ${c.id===cur?'selected':''}>${esc(c.name)}</option>`).join('')}
+      </select></td>
+    </tr>`;}).join('');
+
+  const dtRows=DB.dayTypes.map(d=>{
+    const dates=DB.holidays.filter(h=>h.typeId===d.id).map(h=>h.date).sort();
+    const chips=dates.map(x=>`<button class="fchip on" data-htdel="${x}" title="Remove ${fmtY(x)}" style="color:${d.color}"><i></i>${fmt(x)} ✕</button>`).join('');
+    return `<tr>
       <td><input type="color" value="${d.color}" data-dcol="${d.id}"></td>
-      <td><input type="text" value="${esc(d.name)}" data-dname="${d.id}" style="width:100%;min-width:160px"></td>
-      <td class="mono">${DB.holidays.filter(h=>h.typeId===d.id).length}</td>
+      <td style="min-width:150px"><input type="text" value="${esc(d.name)}" data-dname="${d.id}" style="width:100%"></td>
+      <td style="min-width:280px"><div class="chips" style="margin-bottom:${dates.length?'7px':'0'}">${chips||'<span class="hint">No days marked yet</span>'}</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <input type="date" data-htfrom="${d.id}">
+          <span class="hint">to</span>
+          <input type="date" data-htto="${d.id}" title="Optional — leave empty for a single day">
+          <button class="btn sm" data-htadd="${d.id}">Add</button>
+        </div></td>
       <td><button class="ibtn del" data-ddel="${d.id}">✕</button></td>
-    </tr>`).join('');
+    </tr>`;}).join('');
 
   const oCards=DB.outlets.map(o=>{
     const [s,e]=outletSpan(o);
@@ -1116,30 +1163,40 @@ function viewManage(){
         <input type="text" value="${esc(o.name)}" data-oname="${o.id}">
         <button class="ibtn del" data-odel="${o.id}" title="Delete outlet">✕</button>
       </div>
-      <div class="ometa">${o.tasks.length} tasks · ${o.tasks.filter(t=>t.ms).length} ◆ milestones<br>
-        ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}${w?'<br>works through '+w+' special day'+(w===1?'':'s'):''}</div>
+      <div class="ometa">${o.tasks.length} tasks · ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}${w?'<br>works through '+w+' special day'+(w===1?'':'s'):''}</div>
     </div>`;}).join('');
 
   return `
   <div class="card">
     <div class="card-h"><h2>Categories</h2>
-      <span class="sub">Work packages — pick which ones appear as rows of the milestone matrix</span><span class="spacer"></span>
+      <span class="sub">Work packages — tick Milestone to give a category a row in the matrix</span><span class="spacer"></span>
       <button class="btn sm pri" id="catAdd">Add category</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
-      <th></th><th>Name</th><th>Tasks</th><th>Flagged ◆</th><th>In matrix</th><th></th></tr></thead>
-      <tbody>${catRows}</tbody></table></div>
-    <div class="card-b hint">Every category always shows on the calendar. Deleting one moves its tasks to <b>Other</b>; Other tasks appear individually on the calendar.</div>
+      <th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th></th></tr></thead>
+      <tbody>${catRows||'<tr><td colspan="5" class="hint" style="padding:14px">No categories yet.</td></tr>'}</tbody></table></div>
+    <div class="card-b hint">Deleting a category leaves its tasks uncategorised. Uncategorised tasks appear individually on the calendar and stay out of the milestone matrix.</div>
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Day types</h2>
-      <span class="sub">The colours used when you mark special days on the Critical Path</span><span class="spacer"></span>
+    <div class="card-h"><h2>Task categorisation</h2>
+      <span class="sub">${tasks.length} unique tasks across ${DB.outlets.length} outlets — assign once, applies everywhere</span></div>
+    <div class="scroll" style="max-height:440px"><table class="tbl"><thead><tr>
+      <th>Task</th><th>Outlets</th><th>Category</th></tr></thead>
+      <tbody>${tRows}</tbody></table></div>
+    <div class="card-b hint">The choice is remembered by task name: every current outlet updates immediately, and future
+      imports of a task with the same name land in the right category automatically.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Special days</h2>
+      <span class="sub">Mark the days for each type — one day or a range — and every outlet's chart recalculates</span><span class="spacer"></span>
       <button class="btn sm pri" id="dtAdd">Add day type</button></div>
     <div class="scroll"><table class="tbl"><thead><tr>
-      <th></th><th>Name</th><th>Days marked</th><th></th></tr></thead>
+      <th></th><th>Type</th><th>Days</th><th></th></tr></thead>
       <tbody>${dtRows}</tbody></table></div>
-    <div class="card-b hint">To mark days, click any date header on the Critical Path — one day or a range,
-      with an optional works-anyway exception per outlet. Marked days apply to every outlet.</div>
+    <div class="card-b hint">Days can also be marked straight from a Critical Path date header — same thing.
+      To let one outlet work through a special day, click that date's header on the outlet's chart and tick
+      <b>works on this day anyway</b>.</div>
   </div>
 
   <div class="card">
@@ -1170,8 +1227,7 @@ const CAT_RULES=[
  ['handover',/handing over|hand over|final finishing|troubleshoot|final touch/i],
  ['civil',/tiling|blockwall|block wall|floor leveling|perimeter wall|sokage|hume pipe|civil|plinth|cool room|demolition/i],
  ['mep',/electric|conduit|plumb|gas line|canopy|network|\bit\b|power supply|linear light|signage|neon|tv bracket|\bac\b|trunking|duct|lighting/i]];
-const MS_RULE=/handing over|hand over|partition installation|partition removal|merchandi|merchendi|fit ?out works \(ss\)|back ?wall fitouts|equipment placing|equipment commission|final finishing|new store arrangement|setting up the back wall/i;
-function guessCat(n){for(const[id,re]of CAT_RULES)if(re.test(n))return id;return 'other';}
+function guessCat(n){for(const[id,re]of CAT_RULES)if(re.test(n)&&DB.categories.some(c=>c.id===id))return id;return null;}
 function labelType(l){
   const u=(l||'').toUpperCase();
   if(u.includes('POYA'))return 'poya';
@@ -1218,11 +1274,12 @@ function parseWorkbook(wb){
       const start=dateCols[bars[0]],end=dateCols[bars[bars.length-1]];
       const lvl=row[cLvl];
       const name=String(nm).replace(/\s+/g,' ').trim();
+      const k=name.trim().toLowerCase();
       tasks.push({id:uid('t'),name,start,end,
         _on:new Set(bars.map(i=>dateCols[i])),
         resp:row[cResp]?String(row[cResp]).replace(/\s+/g,' ').trim():'',
         dept:row[cDept]?String(row[cDept]).replace(/\s+/g,' ').trim():'',
-        cat:guessCat(name),ms:MS_RULE.test(name),
+        cat:(k in DB.taskMap)?DB.taskMap[k]:guessCat(name),
         done:(typeof lvl==='number'&&lvl<=1)?lvl*100:null});
     }
     if(!tasks.length)return;
@@ -1294,7 +1351,7 @@ function handleXlsx(file){
         const old=DB.outlets.find(x=>x.name.toLowerCase()===o.name.toLowerCase());
         if(old&&keep){
           const prev=new Map(old.tasks.map(t=>[t.name.toLowerCase(),t]));
-          o.tasks.forEach(t=>{const p=prev.get(t.name.toLowerCase());if(p){t.cat=p.cat;t.ms=p.ms;if(p.done!=null)t.done=p.done;}});
+          o.tasks.forEach(t=>{const p=prev.get(t.name.toLowerCase());if(p){t.cat=p.cat;if(p.done!=null)t.done=p.done;}});
           o.launch=old.launch;
         }
         if(old){o.id=old.id;o.color=old.color;DB.outlets[DB.outlets.indexOf(old)]=o;}
@@ -1421,7 +1478,7 @@ function wire(){
   on('cpAdd',()=>{
     const o=outletOf(UI.outlet); if(!o)return;
     const [ws]=outletSpan(o);
-    o.tasks.push({id:uid('t'),name:'New task',start:ws,end:ws,skip:[],resp:'',dept:'',cat:'other',ms:false,done:null});
+    o.tasks.push({id:uid('t'),name:'New task',start:ws,end:ws,skip:[],resp:'',dept:'',cat:null,done:null});
     UI.cpEdit=true; markDirty(); render();
     const w=$('cpWrap'); if(w)w.scrollTop=w.scrollHeight;
   });
@@ -1455,24 +1512,18 @@ function wire(){
   // inline editing (Edit mode)
   const task=id=>{const o=outletOf(UI.outlet);return o&&o.tasks.find(x=>x.id===id);};
   const bindF=(sel,fn,rerender)=>document.querySelectorAll(sel).forEach(inp=>inp.onchange=()=>{
-    const t=task(inp.dataset.fname||inp.dataset.fstart||inp.dataset.fend||inp.dataset.fresp||inp.dataset.fdept||inp.dataset.fcat);
+    const t=task(inp.dataset.fname||inp.dataset.fresp||inp.dataset.fdept);
     if(!t)return; fn(t,inp.value); markDirty(); if(rerender)render();
   });
-  bindF('[data-fname]',(t,v)=>{t.name=v.trim()||'Untitled task';},false);
-  bindF('[data-fstart]',(t,v)=>{
-    if(!v)return; t.start=v; if(t.end<t.start)t.end=t.start;
-    t.skip=(t.skip||[]).filter(d=>d>=t.start&&d<=t.end);
-  },true);
-  bindF('[data-fend]',(t,v)=>{
-    if(!v)return; t.end=v; if(t.end<t.start)t.start=t.end;
-    t.skip=(t.skip||[]).filter(d=>d>=t.start&&d<=t.end);
+  bindF('[data-fname]',(t,v)=>{
+    const name=v.trim()||'Untitled task';
+    t.name=name;
+    const k=name.toLowerCase();
+    if(k in DB.taskMap)t.cat=DB.taskMap[k];     // renamed onto a known task → its category
+    else DB.taskMap[k]=t.cat;                    // new name → remember its category
   },true);
   bindF('[data-fresp]',(t,v)=>{t.resp=v.trim();},false);
   bindF('[data-fdept]',(t,v)=>{t.dept=v.trim();},false);
-  bindF('[data-fcat]',(t,v)=>{t.cat=v;},true);
-  document.querySelectorAll('[data-tms]').forEach(b=>b.onclick=()=>{
-    const t=task(b.dataset.tms); if(t){t.ms=!t.ms;markDirty();render();}
-  });
   document.querySelectorAll('[data-tup]').forEach(b=>b.onclick=()=>moveTask(b.dataset.tup,-1));
   document.querySelectorAll('[data-tdn]').forEach(b=>b.onclick=()=>moveTask(b.dataset.tdn,1));
   document.querySelectorAll('[data-tdup]').forEach(b=>b.onclick=()=>{
@@ -1494,15 +1545,43 @@ function wire(){
     DB.categories.push({id:uid('c'),name,color:'#5856D6',inMilestones:true,inCalendar:true});
     markDirty(); render();
   });
-  document.querySelectorAll('[data-ccol]').forEach(i=>i.onchange=()=>{cat(i.dataset.ccol).color=i.value;markDirty();render();});
-  document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{cat(i.dataset.cname).name=i.value.trim()||'Category';markDirty();render();});
+  document.querySelectorAll('[data-ccol]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.ccol);if(c){c.color=i.value;markDirty();render();}});
+  document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.cname);if(c){c.name=i.value.trim()||'Category';markDirty();render();}});
   document.querySelectorAll('[data-cms]').forEach(i=>i.onchange=()=>{cat(i.dataset.cms).inMilestones=i.checked;markDirty();render();});
   document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=async()=>{
-    const c=cat(b.dataset.cdel);
-    if(c.id==='other'){toast('“Other” is the fallback category and can’t be deleted');return;}
-    if(!await uiConfirm(`Delete <b>${esc(c.name)}</b>? Its tasks move to Other.`,{title:'Delete category',ok:'Delete',danger:true}))return;
-    DB.outlets.forEach(o=>o.tasks.forEach(t=>{if(t.cat===c.id)t.cat='other';}));
+    const c=cat(b.dataset.cdel); if(!c)return;
+    if(!await uiConfirm(`Delete <b>${esc(c.name)}</b>? Its tasks become uncategorised.`,{title:'Delete category',ok:'Delete',danger:true}))return;
+    DB.outlets.forEach(o=>o.tasks.forEach(t=>{if(t.cat===c.id)t.cat=null;}));
+    Object.keys(DB.taskMap).forEach(k=>{if(DB.taskMap[k]===c.id)DB.taskMap[k]=null;});
     DB.categories=DB.categories.filter(x=>x.id!==c.id);
+    markDirty(); render();
+  });
+
+  document.querySelectorAll('[data-tmap]').forEach(s=>s.onchange=()=>{
+    DB.taskMap[s.dataset.tmap]=s.value||null;
+    applyTaskMap();
+    markDirty(); render();
+  });
+
+  // special-day dates per type
+  document.querySelectorAll('[data-htadd]').forEach(b=>b.onclick=()=>{
+    const tid=b.dataset.htadd;
+    const from=document.querySelector(`[data-htfrom="${tid}"]`).value;
+    const to=document.querySelector(`[data-htto="${tid}"]`).value;
+    if(!from){toast('Pick a date first');return;}
+    const dt=dayType(tid);
+    const dates=to&&to>from?range(from,to):[from];
+    dates.forEach(d=>{
+      DB.holidays=DB.holidays.filter(x=>x.date!==d);
+      DB.holidays.push({date:d,label:dt.name.toUpperCase(),typeId:tid});
+    });
+    DB.holidays.sort((a,b)=>a.date.localeCompare(b.date));
+    markDirty(); render();
+  });
+  document.querySelectorAll('[data-htdel]').forEach(b=>b.onclick=()=>{
+    const d=b.dataset.htdel;
+    DB.holidays=DB.holidays.filter(h=>h.date!==d);
+    DB.outlets.forEach(o=>o.worksOn=(o.worksOn||[]).filter(x=>x!==d));
     markDirty(); render();
   });
 
