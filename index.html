@@ -139,14 +139,9 @@ table.mtx tbody td .dt{display:inline-block;min-width:44px;padding:6px 5px;borde
 table.mtx tbody td .dt.rng{font-size:12px;white-space:normal}
 table.mtx tbody td .dt.pick{cursor:pointer}
 table.mtx tbody td .dt.pick:hover{background:var(--accent-soft)}
-/* A repeating gradient strikes every wrapped line, and unlike text-decoration
-   it rasterises reliably when the matrix is exported. */
-table.mtx tbody td .dt.done{opacity:.62;line-height:1.5;
-  background-image:linear-gradient(to bottom,transparent calc(50% - 1px),currentColor calc(50% - 1px),currentColor calc(50% + 1px),transparent calc(50% + 1px));
-  background-size:100% 1.5em;background-repeat:repeat-y;background-position:0 0}
-.exporting table.mtx tbody td .dt.done{opacity:.6;
-  background-image:linear-gradient(to bottom,transparent calc(50% - 1.5px),currentColor calc(50% - 1.5px),currentColor calc(50% + 1.5px),transparent calc(50% + 1.5px))}
-table.mtx tbody td .dt.rng.done{line-height:1.5}
+table.mtx tbody td .dt .pt{display:block;white-space:nowrap}
+table.mtx tbody td .dt.done{opacity:.6}
+table.mtx tbody td .dt.done .pt{text-decoration:line-through;text-decoration-thickness:2px}
 table.mtx tbody tr.hand td{border-top:2px solid var(--line-2)}
 table.mtx tbody tr.hand td.lead{font-weight:700}
 table.mtx tbody tr.launch td.lead{font-weight:700;color:var(--accent);background:var(--accent-soft)}
@@ -403,7 +398,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
      4. SEED                     — copy baked into this file
    ============================================================ */
 
-const BUILD='2026-08-03i';   // shown in the status bar so the live version is verifiable
+const BUILD='2026-08-03j';   // shown in the status bar so the live version is verifiable
 const LS  = 'moonshot.tracker.v3';
 const LSU = 'moonshot.ui.v1';
 let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
@@ -501,7 +496,7 @@ function msSegments(o,cid){
 }
 /** A dash means three or more consecutive days. Two days are listed separately,
     so "12 & 13 Aug" rather than "12–13 Aug". */
-function fmtSegments(segs){
+function fmtSegmentList(segs){
   const parts=[];
   segs.forEach(([a,b])=>{
     if(a===b){ parts.push(fmt(a)); return; }
@@ -515,6 +510,17 @@ function fmtSegments(segs){
     const m=parts[0].match(/^(\d+) ([A-Za-z]+)$/), n=parts[1].match(/^(\d+) ([A-Za-z]+)$/);
     if(m&&n&&m[2]===n[2]) out=[m[1]+' & '+n[1]+' '+n[2]];
   }
+  return out;
+}
+/** The pieces of a milestone date, each with its trailing separator, so a cell
+    can put one per line — every line then carries its own strike cleanly. */
+function segParts(segs){
+  const out=fmtSegmentList(segs);
+  if(out.length===1) return out;
+  return out.map((p,i)=> i===out.length-1 ? p : (i===out.length-2 ? p+' &' : p+','));
+}
+function fmtSegments(segs){
+  const out=fmtSegmentList(segs);
   if(out.length===1) return out[0];
   if(out.length===2) return out.join(' & ');
   return out.slice(0,-1).join(', ')+' & '+out[out.length-1];
@@ -837,9 +843,10 @@ function viewMilestones(){
       const r=msSegments(o,c.id);
       if(!r) return `<td><span class="dt dim">·</span></td>`;
       const done=r.end<today();
+      const parts=segParts(r.segs);
       return `<td><span class="dt ${r.segs.length>1||r.start!==r.end?'rng':''} ${done&&UI.strike?'done':''}"
         title="${r.n} task${r.n===1?'':'s'}"
-        style="color:${darken(o.color,.30)};font-weight:600">${fmtSegments(r.segs)}</span></td>`;
+        style="color:${darken(o.color,.30)};font-weight:600">${parts.map(p=>`<span class="pt">${esc(p)}</span>`).join('')}</span></td>`;
     }).join('');
     body+=`<tr><td class="lead"><span class="num">${String(idx+1).padStart(2,'0')}</span>${esc(c.name)}</td>${tds}</tr>`;
   });
