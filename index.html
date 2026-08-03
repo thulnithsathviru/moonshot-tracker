@@ -365,6 +365,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
      4. SEED                     — copy baked into this file
    ============================================================ */
 
+const BUILD='2026-08-03b';   // shown in the status bar so the live version is verifiable
 const LS  = 'moonshot.tracker.v3';
 const LSU = 'moonshot.ui.v1';
 let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
@@ -635,9 +636,11 @@ function renderSync(){
   if(cloud.state==='saving'||autoT){
     html=`<span class="dot2 c"></span>Saving…`;
   }else if(cloud.state==='ok'){
-    html=`<span class="dot2 g"></span>All changes saved${cloud.at?' · '+cloud.at.toLocaleTimeString():''} <span style="color:var(--line-2)">|</span> ${n} outlets · ${t} tasks`;
+    html=`<span class="dot2 g"></span>All changes saved${cloud.at?' · '+cloud.at.toLocaleTimeString():''} <span style="color:var(--line-2)">|</span> ${n} outlets · ${t} tasks
+      <span class="spacer"></span><span style="color:var(--ink-3);font-size:11px">build ${BUILD}</span>`;
   }else if(cloud.state==='empty'){
-    html=`<span class="dot2 a"></span>Cloud is empty — your first change will publish automatically <span style="color:var(--line-2)">|</span> ${n} outlets · ${t} tasks`;
+    html=`<span class="dot2 a"></span>Cloud is empty — your first change will publish automatically <span style="color:var(--line-2)">|</span> ${n} outlets · ${t} tasks
+      <span class="spacer"></span><span style="color:var(--ink-3);font-size:11px">build ${BUILD}</span>`;
   }else{
     cls+=' dirty';
     html=`<span class="dot2 r"></span>Offline — changes are kept on this device
