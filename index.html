@@ -14,6 +14,7 @@
   --ink:#1D1D1F; --ink-2:#6E6E73; --ink-3:#8E8E93;
   --line:#E5E5EA; --line-2:#D2D2D7;
   --accent:#509353; --accent-soft:#EAF3EC;
+  --today:#0071E3; --today-soft:#E4F0FD;
   --ok:#34C759; --warn:#FF9500; --danger:#FF3B30;
   --radius:18px; --radius-sm:12px;
   --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 30px rgba(0,0,0,.06);
@@ -167,9 +168,9 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt .dh .dd{font-size:10.5px;font-weight:620;font-family:var(--mono)}
 .gt .dh .mo{font-size:7px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;min-height:9px}
 .gt .dh.we{background:#F0F0F3}
-.gt .dh.today{border-bottom:3px solid var(--accent)!important}
-.gt .dh.today .dd{color:var(--accent);font-weight:750}
-.gt .dh.today .dow,.gt .dh.today .mo{color:var(--accent)}
+.gt .dh.today{border-bottom:3px solid var(--today)!important;background:var(--today-soft)}
+.gt .dh.today .dd{color:var(--today);font-weight:750}
+.gt .dh.today .dow,.gt .dh.today .mo{color:var(--today)}
 .gt .dh.hol .dow,.gt .dh.hol .dd,.gt .dh.hol .mo{color:#fff}
 .gt tbody .d.we{background:#F7F7F9}
 .gt tbody .d.cell{cursor:pointer}
@@ -199,21 +200,21 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .exporting .gantt{max-height:none!important;overflow:visible!important}
 /* shrink the slide to its table so the heading block lines up with the columns */
 .exporting .mtx-outer{overflow:visible!important;padding:26px!important;display:inline-block!important;width:max-content!important;max-width:none!important}
-.exporting table.mtx{table-layout:fixed!important;width:auto!important;margin:0!important}
+.exporting table.mtx{table-layout:auto!important;width:auto!important;margin:0!important}
 .exporting .slide-head{width:100%}
 /* Columns are pinned to a hard pixel width. The export is scaled to fit the page,
    so if the columns were free to grow with the type the text would come out the
    same size on paper — locking the grid is what makes the bigger font read bigger. */
 .exporting table.mtx thead th:not(.lead),
 .exporting table.mtx tbody td:not(.lead){width:300px!important;min-width:300px!important;max-width:300px!important}
-.exporting table.mtx th.lead,.exporting table.mtx td.lead{width:360px!important;min-width:360px!important;max-width:360px!important;white-space:normal!important;overflow:hidden!important;line-height:1.2!important}
+.exporting table.mtx th.lead,.exporting table.mtx td.lead{width:auto!important;min-width:0!important;max-width:none!important;white-space:nowrap!important;overflow:visible!important;line-height:1.2!important}
 .exporting table.mtx tbody td .dt{white-space:normal!important;display:inline-block}
 /* presentation-sized type: readable when the slide is projected */
 .exporting table.mtx{font-size:27px!important}
 .exporting table.mtx thead th{padding:22px 16px!important;font-size:27px!important}
 .exporting table.mtx tbody td{height:96px!important;padding:12px 14px!important;vertical-align:middle}
-.exporting table.mtx tbody td.lead{font-size:26px!important;padding:0 18px 0 20px!important}
-.exporting table.mtx tbody td.lead .num{font-size:20px!important;margin-right:14px!important}
+.exporting table.mtx tbody td.lead{font-size:24px!important;padding:0 18px 0 20px!important}
+.exporting table.mtx tbody td.lead .num{font-size:18px!important;margin-right:12px!important}
 .exporting table.mtx tbody td .dt{font-size:26px!important;padding:10px 7px!important;min-width:0!important}
 .exporting table.mtx tbody td .dt.rng{font-size:24px!important;line-height:1.35!important}
 .exporting table.mtx thead th.lead{font-size:16px!important}
@@ -239,10 +240,10 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .exporting .chip .cp{font-size:11px!important}
 .exporting .cal-legend{max-width:1480px}
 /* today: a ring that html2canvas can actually draw */
-.exporting .cell-day.today{border:3px solid var(--accent)!important;padding:6px 7px!important;box-shadow:none!important}
-.exporting .wkcol.today{border:3px solid var(--accent)!important;padding:7px!important;box-shadow:none!important}
+.exporting .cell-day.today{border:3px solid var(--today)!important;padding:6px 7px!important;box-shadow:none!important}
+.exporting .wkcol.today{border:3px solid var(--today)!important;padding:7px!important;box-shadow:none!important}
 .exporting .cell-day.today .dnum>span:first-child{border-width:2px!important}
-.exporting .gt .dh.today{box-shadow:none!important;border-bottom:3px solid var(--accent)!important}
+.exporting .gt .dh.today{box-shadow:none!important;border-bottom:3px solid var(--today)!important}
 /* export headings */
 .exp-head{padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--line);background:#fff}
 .exp-head .eyebrow{display:block;margin-bottom:4px}
@@ -258,11 +259,12 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .cell-day.quiet{background:transparent;border-style:dashed}
 .cell-day .dnum{font-size:13px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums;line-height:1;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 .cell-day.quiet .dnum{color:var(--ink-3);font-weight:500}
-/* today = ring, not fill. Borders (unlike box-shadow) rasterise reliably in exports. */
-.cell-day.today{border:2px solid var(--accent)!important;padding:7px 8px}
-.cell-day.today .dnum>span:first-child{color:var(--accent);font-weight:750;border:1.5px solid var(--accent);min-width:21px;height:21px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin:-3px 0;line-height:1}
+/* today = blue ring + soft blue fill. Borders (unlike box-shadow) rasterise reliably in exports. */
+.cell-day.today{border:2px solid var(--today)!important;background:var(--today-soft)!important;padding:7px 8px}
+.cell-day.today .dnum>span:first-child{color:#fff;background:var(--today);font-weight:750;border:1.5px solid var(--today);min-width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin:-3px 0;line-height:1}
 .cell-day.hol{background:var(--hb,#eee);border-color:transparent}
-.cell-day.today.hol .dnum>span:first-child{border-color:var(--ht,#fff);color:var(--ht,#fff)}
+.cell-day.today.hol{background:var(--hb,#eee)!important}
+.cell-day.today.hol .dnum>span:first-child{background:#fff;color:var(--today);border-color:#fff}
 .cell-day.hol .dnum,.cell-day.hol .hlbl{color:var(--ht,#fff)}
 .hlbl{font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.2;text-align:right}
 .dchips{display:flex;flex-direction:column;gap:5px}
@@ -278,9 +280,9 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .more:hover{color:var(--accent)}
 .wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:14px 20px 20px}
 .wkcol{background:#fff;border:1px solid var(--line);border-radius:12px;min-height:340px;padding:9px;display:flex;flex-direction:column;gap:6px}
-.wkcol.today{border:2px solid var(--accent);padding:8px}
-.wkcol.today .wkhead{border-bottom-color:var(--accent)}
-.wkcol.today .wkhead span:first-child{color:var(--accent);font-weight:750}
+.wkcol.today{border:2px solid var(--today);background:var(--today-soft);padding:8px}
+.wkcol.today .wkhead{border-bottom-color:var(--today)}
+.wkcol.today .wkhead span:first-child{color:var(--today);font-weight:750}
 .wkhead{font-size:12.5px;font-weight:650;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
 .daylist{display:flex;flex-direction:column}
 .dgroup{border-bottom:1px solid var(--line)}
@@ -888,13 +890,17 @@ function viewMilestones(){
   });
 
   if(cats.length){
+    const past=d=>!!d&&d<today()&&UI.strike;
     body+=`<tr class="hand"><td class="lead"><span class="num" style="visibility:hidden">00</span>Handover</td>`+
-      outs.map(o=>`<td><span class="dt" style="color:${darken(o.color,.30)};font-weight:700">${fmt(handoverDate(o))}</span></td>`).join('')+`</tr>`;
+      outs.map(o=>{
+        const hd=handoverDate(o);
+        return `<td><span class="dt ${past(hd)?'done':''}" style="color:${darken(o.color,.30)};font-weight:700"><span class="pt">${fmt(hd)}</span></span></td>`;
+      }).join('')+`</tr>`;
     body+=`<tr class="launch"><td class="lead"><span class="num" style="visibility:hidden">00</span>Launch date</td>`+
       outs.map(o=>{
         const has=!!o.launch;
-        return `<td><span class="dt pick" data-launch="${o.id}" title="Click to set"
-          style="color:${has?'var(--accent)':'var(--line-2)'};font-weight:${has?700:400}">${has?fmt(o.launch):'·'}</span></td>`;
+        return `<td><span class="dt pick ${past(o.launch)?'done':''}" data-launch="${o.id}" title="Click to set"
+          style="color:${has?'var(--accent)':'var(--line-2)'};font-weight:${has?700:400}"><span class="pt">${has?fmt(o.launch):'·'}</span></span></td>`;
       }).join('')+`</tr>`;
   }
 
