@@ -262,10 +262,7 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 /* today = blue ring + soft blue fill. Borders (unlike box-shadow) rasterise reliably in exports. */
 .cell-day.today{border:2px solid var(--today)!important;background:var(--today-soft)!important;padding:7px 8px}
 .cell-day.today .dnum>span:first-child{color:#fff;background:var(--today);font-weight:750;border:1.5px solid var(--today);min-width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin:-3px 0;line-height:1}
-.cell-day.hol{background:var(--hb,#eee);border-color:transparent}
-.cell-day.today.hol{background:var(--hb,#eee)!important}
-.cell-day.today.hol .dnum>span:first-child{background:#fff;color:var(--today);border-color:#fff}
-.cell-day.hol .dnum,.cell-day.hol .hlbl{color:var(--ht,#fff)}
+.cell-day.hol .hlbl{color:var(--ht,var(--ink-3))}
 .hlbl{font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.2;text-align:right}
 .dchips{display:flex;flex-direction:column;gap:5px}
 .chip{display:flex;flex-direction:column;gap:1px;color:#fff;padding:6px 9px;border-radius:8px;overflow-wrap:anywhere;border:0;text-align:left;width:100%;cursor:pointer;transition:filter .12s}
@@ -1011,7 +1008,7 @@ function calMonth(){
     const inMo=date.slice(0,7)===first.slice(0,7);
     const h=holidayOn(date); const dt=h?dayType(h.typeId):null;
     return `<div class="cell-day ${inMo?'':'quiet'} ${date===t?'today':''} ${h?'hol':''}"
-      style="${h?`--hb:${dt.color};--ht:${dt.text||'#fff'}`:''}">
+      style="${h?`background:${dt.color}14;border-color:${dt.color}55;--ht:${dt.color}`:''}">
       <div class="dnum"><span>${s2d(date).getDate()}</span>${h?`<span class="hlbl">${esc(holLabel(h))}</span>`:''}</div>
       <div class="dchips">${calChips(date,null)}</div>
     </div>`;
@@ -1911,9 +1908,12 @@ async function exportImage(pdf,pageKey){
     const w=el.scrollWidth, hgt=el.scrollHeight;
     el.style.width=w+'px';
     const page=PAGES[pageKey]||PAGES.a4;
-    // 300 PPI across the chosen page width (capped so the canvas stays renderable)
-    const targetPx=page.w?page.w*300:w*2;
-    const scale=Math.max(1,Math.min(targetPx/w,16000/w,16000/hgt));
+    /* 400 PPI across the chosen page width. The budget keeps the canvas
+       allocatable on a phone — beyond ~80 Mpx browsers start refusing it. */
+    const DPI=400, BUDGET=80e6;
+    const targetPx=page.w?page.w*DPI:w*3;
+    let scale=Math.max(1,Math.min(targetPx/w,16000/w,16000/hgt));
+    if(w*hgt*scale*scale>BUDGET) scale=Math.max(1,Math.sqrt(BUDGET/(w*hgt)));
     const canvas=await html2canvas(el,{scale,backgroundColor:'#ffffff',windowWidth:w+80,windowHeight:hgt+80});
     const name='moonshot-'+t.name+'-'+today();
     if(pdf){
@@ -1924,7 +1924,8 @@ async function exportImage(pdf,pageKey){
       const r=Math.min(pw/canvas.width,ph/canvas.height);
       const x=(doc.internal.pageSize.getWidth()-canvas.width*r)/2;
       const y=(doc.internal.pageSize.getHeight()-canvas.height*r)/2;
-      doc.addImage(canvas.toDataURL('image/jpeg',0.94),'JPEG',x,y,canvas.width*r,canvas.height*r,undefined,'FAST');
+      // PNG, not JPEG: these sheets are flat colour and crisp type, where JPEG ringing shows
+      doc.addImage(canvas.toDataURL('image/png'),'PNG',x,y,canvas.width*r,canvas.height*r,undefined,'FAST');
       doc.save(name+'-'+(page.name||'').replace(/\s+/g,'')+'.pdf');
     }else{
       const a=document.createElement('a');
