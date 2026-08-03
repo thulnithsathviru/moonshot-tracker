@@ -200,8 +200,9 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .exporting .slide-head{width:100%}
 .exporting table.mtx th.lead,.exporting table.mtx td.lead{white-space:nowrap;width:auto!important}
 /* let multi-range dates wrap so the table stays compact instead of very wide */
-.exporting table.mtx thead th{max-width:190px}
-.exporting table.mtx tbody td{max-width:190px}
+.exporting table.mtx thead th:not(.lead){max-width:190px}
+.exporting table.mtx tbody td:not(.lead){max-width:190px}
+.exporting table.mtx th.lead,.exporting table.mtx td.lead{max-width:none!important;width:auto!important;white-space:nowrap!important;overflow:visible!important}
 .exporting table.mtx tbody td .dt{white-space:normal!important;display:inline-block}
 /* presentation-sized type: readable when the slide is projected */
 .exporting table.mtx{font-size:17px!important}
@@ -216,6 +217,13 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .exporting .slide-head .right b{font-size:17px!important}
 .exporting .slide-head{padding-bottom:20px!important;margin-bottom:24px!important}
 .exporting .cplegend{break-inside:avoid}
+.exporting .gbar{box-shadow:none!important}
+/* export headings */
+.exp-head{padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--line);background:#fff}
+.exp-head .eyebrow{display:block;margin-bottom:4px}
+.exp-head h2{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.exp-head .sub{font-size:13px;color:var(--ink-3);margin-top:3px}
+.exp-wrap{background:#fff;display:inline-block;padding:22px 24px}
 /* ---------- calendar (old chip design) ---------- */
 .cal-dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:7px;padding:18px 20px 0}
 .cal-dow div{text-align:center;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
@@ -378,7 +386,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
      4. SEED                     — copy baked into this file
    ============================================================ */
 
-const BUILD='2026-08-03c';   // shown in the status bar so the live version is verifiable
+const BUILD='2026-08-03d';   // shown in the status bar so the live version is verifiable
 const LS  = 'moonshot.tracker.v3';
 const LSU = 'moonshot.ui.v1';
 let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
@@ -756,11 +764,35 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 <script>
 /* ---------- shared outlet picker ---------- */
 function outletChips(){
-  return `<div class="chips">
-    <button class="fchip on" id="outAll" style="color:var(--ink-2)"><i></i>All</button>
-    <button class="fchip on" id="outNone" style="color:var(--ink-2)"><i></i>None</button>
-    ${outletsOrdered().map(o=>`<button class="fchip ${UI.outlets.has(o.id)?'on':''}" data-outsel="${o.id}" style="color:${o.color}"><i></i>${esc(o.name)}</button>`).join('')}
-  </div>`;
+  const sel=outletsOrdered(DB.outlets.filter(o=>UI.outlets.has(o.id)));
+  const all=sel.length===DB.outlets.length;
+  return `<button class="btn sm" id="outPick">
+      <span style="display:inline-flex;gap:3px;align-items:center">${sel.slice(0,6).map(o=>`<i style="width:9px;height:9px;border-radius:3px;background:${o.color};display:inline-block"></i>`).join('')}${sel.length>6?'<span style="font-size:11px;color:var(--ink-3)">+'+(sel.length-6)+'</span>':''}</span>
+      ${all?'All outlets':sel.length+' of '+DB.outlets.length+' outlets'} ▾</button>`;
+}
+function outletPicker(){
+  const rows=outletsOrdered().map(o=>`<label class="cbrow" style="padding:7px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px">
+      <input type="checkbox" data-outck="${o.id}" ${UI.outlets.has(o.id)?'checked':''}>
+      <i style="width:11px;height:11px;border-radius:3px;background:${o.color};display:inline-block"></i>
+      <span style="flex:1">${esc(o.name)}</span>
+      <span class="mono" style="font-size:11px;color:var(--ink-3)">${o.launch?fmt(o.launch):fmt(handoverDate(o))}</span>
+    </label>`).join('');
+  showModal(`<div class="mod" style="width:min(430px,100%)">
+    <div class="mod-h"><h3>Outlets</h3><span class="spacer"></span>
+      <button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mod-b">
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="btn sm" id="op_all">Select all</button>
+        <button class="btn sm" id="op_none">Clear</button>
+      </div>${rows}</div>
+    <div class="mod-f"><button class="btn pri" id="op_ok">Apply</button>
+      <span class="spacer"></span><button class="btn" onclick="closeModal()">Cancel</button></div></div>`);
+  document.getElementById('op_all').onclick=()=>document.querySelectorAll('[data-outck]').forEach(c=>c.checked=true);
+  document.getElementById('op_none').onclick=()=>document.querySelectorAll('[data-outck]').forEach(c=>c.checked=false);
+  document.getElementById('op_ok').onclick=()=>{
+    UI.outlets=new Set([...document.querySelectorAll('[data-outck]:checked')].map(c=>c.dataset.outck));
+    closeModal(); render();
+  };
 }
 
 /* ================== MILESTONES (transposed slide matrix) ================== */
@@ -847,23 +879,22 @@ function calItemsOn(date){
 function calChips(date,limit){
   const items=calItemsOn(date);
   if(!items.length) return '';
-  let entries=[];
-  const m=new Map();
+  // one box per outlet: every task that day listed inside it
+  const byOut=new Map();
   items.forEach(({o,t,c})=>{
-    if(!c.id){ entries.push({sort:o.name+'~'+t.name,html:
-      `<button class="chip" data-day="${date}" style="background:${o.color}">
-        <span class="cn">${esc(t.name)}</span><span class="cp">${esc(o.name)}</span></button>`}); return; }
-    const k=o.id+'|'+c.id;
-    if(!m.has(k)) m.set(k,{o,c,n:0});
-    m.get(k).n++;
+    if(!byOut.has(o.id))byOut.set(o.id,{o,names:[]});
+    const label=c.id?c.name:t.name;
+    const g=byOut.get(o.id);
+    if(!g.names.includes(label))g.names.push(label);
   });
-  [...m.values()].forEach(g=>entries.push({sort:g.o.name+'|'+g.c.name,html:
-    `<button class="chip" data-day="${date}" style="background:${g.o.color}">
-      <span class="cn">${esc(g.o.name)}<span class="n">${g.n}</span></span>
-      <span class="cp">${esc(g.c.name)}</span></button>`}));
-  entries.sort((a,b)=>a.sort.localeCompare(b.sort));
+  const entries=[...byOut.values()].sort((a,b)=>a.o.name.localeCompare(b.o.name)).map(g=>{
+    g.names.sort((a,b)=>a.localeCompare(b));
+    return `<button class="chip" data-day="${date}" style="background:${g.o.color}">
+      <span class="cn">${g.names.map(esc).join('<br>')}</span>
+      <span class="cp">${esc(g.o.name)}</span></button>`;
+  });
   const show=limit?entries.slice(0,limit):entries;
-  return show.map(e=>e.html).join('')
+  return show.join('')
     +(limit&&entries.length>limit?`<button class="more" data-day="${date}">+${entries.length-limit} more</button>`:'');
 }
 function viewCalendar(){
@@ -1327,14 +1358,15 @@ function viewManage(){
 
   <div class="card">
     <div class="card-h"><h2>Task categorisation</h2><span class="spacer"></span>
-      <div class="chips">
-        <button class="fchip ${filt==='all'?'on':''}" data-tfilt="all" style="color:var(--ink-2)"><i></i>All ${tasks.length}</button>
-        <button class="fchip ${filt==='none'?'on':''}" data-tfilt="none" style="color:var(--warn)"><i></i>Uncategorised ${nUncat}</button>
+      <select id="tcatFilter" style="min-width:220px">
+        <option value="all" ${filt==='all'?'selected':''}>All (${tasks.length})</option>
+        <option value="none" ${filt==='none'?'selected':''}>Uncategorised (${nUncat})</option>
+        <option value="some" ${filt==='some'?'selected':''}>Categorised (${tasks.length-nUncat})</option>
         ${DB.categories.map(c=>{
           const n=tasks.filter(u=>(DB.taskMap[u.key]??null)===c.id).length;
-          return n?`<button class="fchip ${filt===c.id?'on':''}" data-tfilt="${c.id}" style="color:${c.color}"><i></i>${esc(c.name||'(unnamed)')} ${n}</button>`:'';
+          return `<option value="${c.id}" ${filt===c.id?'selected':''}>${esc(c.name||'(unnamed)')} (${n})</option>`;
         }).join('')}
-      </div></div>
+      </select></div>
     <div class="scroll" style="max-height:440px" data-keepscroll="tcat"><table class="tbl"><thead><tr>
       <th>Task</th><th>Outlets</th><th>Category</th></tr></thead>
       <tbody>${tRows||'<tr><td colspan="3" class="hint" style="padding:14px">Nothing here.</td></tr>'}</tbody></table></div>
@@ -1686,30 +1718,52 @@ async function exportExcel(scope){
    opened up for the duration of the capture. */
 function exportTarget(){
   if(UI.view==='milestones')return {el:document.getElementById('msSlide'),name:'milestone-matrix'};
-  if(UI.view==='calendar')  return {el:document.getElementById('calBody'),name:'calendar'};
+  if(UI.view==='calendar')  return {el:document.getElementById('calBody'),name:'calendar-'+UI.calMode};
   if(UI.view==='critical')  return {el:document.getElementById('gtb'),name:'critical-path-'+UI.outlet,legend:true};
   return null;
 }
-/** Wrap the chart with its legend so exports carry the key too. */
+/** Heading (and, on a chart, its legend) wrapped around the exported element. */
+function exportHeading(){
+  if(UI.view==='critical'){
+    const o=outletOf(UI.outlet); if(!o)return null;
+    const [s,e]=outletSpan(o);
+    return {title:esc(o.name),sub:'Critical Path · '+fmtY(s)+' – '+fmtY(e)};
+  }
+  if(UI.view==='calendar'){
+    const mode=UI.calMode==='month'?'Month':UI.calMode==='week'?'Week':'Day';
+    let title='';
+    if(UI.calMode==='month'){const d=s2d(UI.calDate);title=MONF[d.getMonth()]+' '+d.getFullYear();}
+    else if(UI.calMode==='week'){const st=addDays(UI.calDate,-dowOf(UI.calDate));title='Week of '+fmtY(st);}
+    else title=DOW[dowOf(UI.calDate)]+', '+fmtY(UI.calDate);
+    const n=DB.outlets.filter(o=>UI.outlets.has(o.id)).length;
+    return {title:esc(title),sub:mode+' view · '+n+' outlet'+(n===1?'':'s')};
+  }
+  return null;
+}
 function buildExportNode(t){
-  if(!t.legend)return {node:t.el,cleanup:()=>{}};
-  const lg=document.getElementById('cpLegend');
-  if(!lg)return {node:t.el,cleanup:()=>{}};
+  const head=exportHeading();
+  const lg=t.legend?document.getElementById('cpLegend'):null;
+  if(!head&&!lg)return {node:t.el,cleanup:()=>{}};
   const box=document.createElement('div');
-  box.style.cssText='background:#fff;display:inline-block;padding:0';
+  box.className='exp-wrap';
   const parent=t.el.parentNode, next=t.el.nextSibling;
-  const lgParent=lg.parentNode, lgNext=lg.nextSibling;
-  const lgClone=lg.cloneNode(true);
-  lgClone.style.borderTop='0';
-  lgClone.style.borderBottom='1px solid #E5E5EA';
-  box.appendChild(lgClone);
+  if(head){
+    const hd=document.createElement('div');
+    hd.className='exp-head';
+    hd.innerHTML=`<span class="eyebrow">Moonshot Programme</span>
+      <h2>${head.title}</h2><div class="sub">${head.sub}</div>`;
+    box.appendChild(hd);
+  }
+  let lgClone=null;
+  if(lg){
+    lgClone=lg.cloneNode(true);
+    lgClone.style.borderTop='0';
+    lgClone.style.padding='0 0 12px';
+    box.appendChild(lgClone);
+  }
   parent.insertBefore(box,next);
   box.appendChild(t.el);
-  return {node:box,cleanup:()=>{
-    parent.insertBefore(t.el,box);
-    box.remove();
-    if(lgParent&&!lg.isConnected)lgParent.insertBefore(lg,lgNext);
-  }};
+  return {node:box,cleanup:()=>{ parent.insertBefore(t.el,box); box.remove(); }};
 }
 const PAGES={
   a4:      {name:'A4',            w:11.69, h:8.27,  fmt:'a4'},
@@ -1805,13 +1859,7 @@ function wire(){
   document.querySelectorAll('#tabs [data-v]').forEach(b=>b.onclick=()=>{UI.view=b.dataset.v;render();});
 
   /* ---- shared outlet picker ---- */
-  on('outAll',()=>{UI.outlets=new Set(DB.outlets.map(o=>o.id));render();});
-  on('outNone',()=>{UI.outlets=new Set();render();});
-  document.querySelectorAll('[data-outsel]').forEach(b=>b.onclick=()=>{
-    const id=b.dataset.outsel;
-    if(UI.outlets.has(id))UI.outlets.delete(id);else UI.outlets.add(id);
-    render();
-  });
+  on('outPick',outletPicker);
 
   /* ---- milestones ---- */
   document.querySelectorAll('[data-mscat]').forEach(b=>b.onclick=()=>{
@@ -1933,7 +1981,8 @@ function wire(){
       markDirty(); render();
     });
   });
-  document.querySelectorAll('[data-tfilt]').forEach(b=>b.onclick=()=>{UI.tcatFilter=b.dataset.tfilt;render();});
+  const tf=$('tcatFilter');
+  if(tf)tf.onchange=()=>{UI.tcatFilter=tf.value;render();};
   document.querySelectorAll('[data-ccol]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.ccol);if(c){c.color=i.value;markDirty();render();}});
   document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.cname);if(c){c.name=i.value.trim();markDirty();render();}});
   document.querySelectorAll('[data-cms]').forEach(i=>i.onchange=()=>{cat(i.dataset.cms).inMilestones=i.checked;markDirty();render();});
