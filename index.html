@@ -202,8 +202,8 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .exporting .slide-head{width:100%}
 .exporting table.mtx th.lead,.exporting table.mtx td.lead{white-space:nowrap;width:auto!important}
 /* let multi-range dates wrap so the table stays compact instead of very wide */
-.exporting table.mtx thead th:not(.lead){max-width:250px}
-.exporting table.mtx tbody td:not(.lead){max-width:250px}
+.exporting table.mtx thead th:not(.lead){max-width:250px;min-width:190px}
+.exporting table.mtx tbody td:not(.lead){max-width:250px;min-width:190px}
 .exporting table.mtx th.lead,.exporting table.mtx td.lead{max-width:none!important;width:auto!important;white-space:nowrap!important;overflow:visible!important}
 .exporting table.mtx tbody td .dt{white-space:normal!important;display:inline-block}
 /* presentation-sized type: readable when the slide is projected */
@@ -398,7 +398,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
      4. SEED                     — copy baked into this file
    ============================================================ */
 
-const BUILD='2026-08-03j';   // shown in the status bar so the live version is verifiable
+const BUILD='2026-08-03k';   // shown in the status bar so the live version is verifiable
 const LS  = 'moonshot.tracker.v3';
 const LSU = 'moonshot.ui.v1';
 let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
@@ -834,7 +834,7 @@ function viewMilestones(){
   const cats=DB.categories.filter(c=>c.inMilestones);
   const outs=outletsOrdered(DB.outlets.filter(o=>UI.outlets.has(o.id)));
 
-  const head=outs.map(o=>`<th style="background:${o.color};min-width:104px">
+  const head=outs.map(o=>`<th style="background:${o.color};min-width:132px">
       <span class="oname">${esc(o.name)}</span></th>`).join('');
 
   let body='';
