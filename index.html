@@ -232,8 +232,8 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .cell-day.quiet{background:transparent;border-style:dashed}
 .cell-day .dnum{font-size:13px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums;line-height:1;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 .cell-day.quiet .dnum{color:var(--ink-3);font-weight:500}
-.cell-day.today{border-color:var(--accent)}
-.cell-day.today .dnum{color:var(--accent);font-weight:700}
+.cell-day.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.cell-day.today .dnum>span:first-child{background:var(--accent);color:#fff;font-weight:700;min-width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin:-2px 0}
 .cell-day.hol{background:var(--hb,#eee);border-color:transparent}
 .cell-day.hol .dnum,.cell-day.hol .hlbl{color:var(--ht,#fff)}
 .hlbl{font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.2;text-align:right}
@@ -242,12 +242,16 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .chip:hover{filter:brightness(.94)}
 .chip .cn{font-weight:700;font-size:12px;line-height:1.28;letter-spacing:-.01em;display:flex;justify-content:space-between;gap:6px}
 .chip .cn .n{font-weight:600;opacity:.85;font-variant-numeric:tabular-nums}
-.chip .cp{font-size:11px;line-height:1.28;opacity:.92;font-weight:480}
+.chip .cn{font-weight:700;font-size:12px;line-height:1.25;letter-spacing:-.01em;display:block;padding-bottom:3px;margin-bottom:3px;border-bottom:1px solid rgba(255,255,255,.32)}
+.chip .cp{font-size:11px;line-height:1.35;opacity:.95;font-weight:480;display:flex;flex-direction:column;gap:1px}
+.chip .bul{display:block;padding-left:9px;position:relative}
+.chip .bul::before{content:"";position:absolute;left:0;top:.52em;width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.85}
 .more{font-size:11px;color:var(--ink-2);padding:1px 4px;text-align:left;background:none;border:0;font-weight:550;cursor:pointer}
 .more:hover{color:var(--accent)}
 .wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:14px 20px 20px}
 .wkcol{background:#fff;border:1px solid var(--line);border-radius:12px;min-height:340px;padding:9px;display:flex;flex-direction:column;gap:6px}
-.wkcol.today{border-color:var(--accent)}
+.wkcol.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.wkcol.today .wkhead span:first-child{color:var(--accent);font-weight:750}
 .wkhead{font-size:12.5px;font-weight:650;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
 .daylist{display:flex;flex-direction:column}
 .dgroup{border-bottom:1px solid var(--line)}
@@ -386,7 +390,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
      4. SEED                     — copy baked into this file
    ============================================================ */
 
-const BUILD='2026-08-03d';   // shown in the status bar so the live version is verifiable
+const BUILD='2026-08-03e';   // shown in the status bar so the live version is verifiable
 const LS  = 'moonshot.tracker.v3';
 const LSU = 'moonshot.ui.v1';
 let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
@@ -766,9 +770,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 function outletChips(){
   const sel=outletsOrdered(DB.outlets.filter(o=>UI.outlets.has(o.id)));
   const all=sel.length===DB.outlets.length;
-  return `<button class="btn sm" id="outPick">
-      <span style="display:inline-flex;gap:3px;align-items:center">${sel.slice(0,6).map(o=>`<i style="width:9px;height:9px;border-radius:3px;background:${o.color};display:inline-block"></i>`).join('')}${sel.length>6?'<span style="font-size:11px;color:var(--ink-3)">+'+(sel.length-6)+'</span>':''}</span>
-      ${all?'All outlets':sel.length+' of '+DB.outlets.length+' outlets'} ▾</button>`;
+  return `<button class="btn sm" id="outPick">${all?'All outlets':sel.length+' of '+DB.outlets.length+' outlets'} ▾</button>`;
 }
 function outletPicker(){
   const rows=outletsOrdered().map(o=>`<label class="cbrow" style="padding:7px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px">
@@ -890,8 +892,8 @@ function calChips(date,limit){
   const entries=[...byOut.values()].sort((a,b)=>a.o.name.localeCompare(b.o.name)).map(g=>{
     g.names.sort((a,b)=>a.localeCompare(b));
     return `<button class="chip" data-day="${date}" style="background:${g.o.color}">
-      <span class="cn">${g.names.map(esc).join('<br>')}</span>
-      <span class="cp">${esc(g.o.name)}</span></button>`;
+      <span class="cn">${esc(g.o.name)}</span>
+      <span class="cp">${g.names.map(n=>`<span class="bul">${esc(n)}</span>`).join('')}</span></button>`;
   });
   const show=limit?entries.slice(0,limit):entries;
   return show.join('')
@@ -1242,40 +1244,43 @@ function cpAttachAutoPan(){
   if(UI.cpFollow===false)return;
   const ws=addDays(outletSpan(o)[0],-3);
   let manual=0, timer=null;
-  const mark=()=>{manual=Date.now();};
-  w.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))mark();},{passive:true});
-  w.addEventListener('touchstart',mark,{passive:true});
-  w.addEventListener('pointerdown',mark,{passive:true});
-  const settle=()=>{
-    clearTimeout(timer);
-    timer=setTimeout(()=>{
-      if(Date.now()-manual<900)return;
-      const dhc=w.querySelector('th.d.dh'); if(!dhc)return;
-      const cellW=dhc.getBoundingClientRect().width;
-      const head=w.querySelector('thead'); if(!head)return;
-      // the topmost task row actually visible, whether the page or the pane scrolled
-      const paneTop=w.getBoundingClientRect().top+head.getBoundingClientRect().height;
-      const limit=Math.max(paneTop,0)+2;
-      const row=[...w.querySelectorAll('tbody tr[data-row]')]
-        .find(r=>{const b=r.getBoundingClientRect();return b.bottom>limit&&b.top<window.innerHeight;});
-      if(!row)return;
-      const t=o.tasks.find(x=>x.id===row.dataset.row); if(!t)return;
-      const target=Math.max(0,Math.round(Math.max(0,diffDays(ws,t.start))*cellW-cellW*2));
-      if(Math.abs(target-w.scrollLeft)<cellW)return;
-      w.scrollTo({left:target,behavior:'smooth'});
-    },320);
+  const pan=()=>{
+    const dhc=w.querySelector('th.d.dh'); if(!dhc)return;
+    const cellW=dhc.getBoundingClientRect().width;
+    const head=w.querySelector('thead'); if(!head)return;
+    // topmost task row actually visible — works whether the page or the pane scrolled
+    const limit=Math.max(w.getBoundingClientRect().top+head.getBoundingClientRect().height,0)+2;
+    const row=[...w.querySelectorAll('tbody tr[data-row]')]
+      .find(r=>{const b=r.getBoundingClientRect();return b.bottom>limit&&b.top<window.innerHeight;});
+    if(!row)return;
+    const t=o.tasks.find(x=>x.id===row.dataset.row); if(!t)return;
+    const target=Math.max(0,Math.round(Math.max(0,diffDays(ws,t.start))*cellW-cellW*2));
+    if(Math.abs(target-w.scrollLeft)<cellW/2)return;
+    w.scrollTo({left:target,behavior:'smooth'});
   };
-  let lastLeft=w.scrollLeft, lastTop=w.scrollTop;
+  const settle=()=>{ clearTimeout(timer); timer=setTimeout(()=>{
+    if(Date.now()-manual<700)return;
+    pan();
+  },260); };
+  // Manual panning is detected from real sideways input only. Deriving it from
+  // scroll deltas mistook our own smooth animation for the user and killed the
+  // feature after the first pan.
+  w.addEventListener('wheel',e=>{ if(Math.abs(e.deltaX)>Math.abs(e.deltaY)) manual=Date.now(); },{passive:true});
+  let dragX=null;
+  w.addEventListener('pointerdown',e=>{dragX=e.clientX;},{passive:true});
+  w.addEventListener('pointermove',e=>{ if(dragX!==null&&Math.abs(e.clientX-dragX)>12) manual=Date.now(); },{passive:true});
+  w.addEventListener('pointerup',()=>{dragX=null;},{passive:true});
+  let lastTop=w.scrollTop;
   w.addEventListener('scroll',()=>{
-    const dh=w.scrollLeft-lastLeft, dv=w.scrollTop-lastTop;
-    lastLeft=w.scrollLeft; lastTop=w.scrollTop;
-    if(dh&&!dv){mark();return;}      // sideways by hand — leave it alone
+    const dv=w.scrollTop-lastTop; lastTop=w.scrollTop;
     if(dv)settle();
   },{passive:true});
   const onWin=()=>settle();
   window.addEventListener('scroll',onWin,{passive:true});
   w._detach=()=>window.removeEventListener('scroll',onWin);
+  setTimeout(pan,120);                 // align as soon as the chart appears
 }
+
 
 
 </script>
