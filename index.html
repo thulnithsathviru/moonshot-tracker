@@ -139,7 +139,10 @@ table.mtx tbody td .dt{display:inline-block;min-width:44px;padding:6px 5px;borde
 table.mtx tbody td .dt.rng{font-size:12px;white-space:normal}
 table.mtx tbody td .dt.pick{cursor:pointer}
 table.mtx tbody td .dt.pick:hover{background:var(--accent-soft)}
-table.mtx tbody td .dt.done{text-decoration:line-through;text-decoration-thickness:1.5px;opacity:.65}
+table.mtx tbody td .dt.done{position:relative;opacity:.62}
+table.mtx tbody td .dt.done::after{content:"";position:absolute;left:2px;right:2px;top:50%;height:2px;background:currentColor;border-radius:2px;transform:translateY(-50%)}
+.exporting table.mtx tbody td .dt.done{opacity:.55}
+.exporting table.mtx tbody td .dt.done::after{height:3px}
 table.mtx tbody tr.hand td{border-top:2px solid var(--line-2)}
 table.mtx tbody tr.hand td.lead{font-weight:700}
 table.mtx tbody tr.launch td.lead{font-weight:700;color:var(--accent);background:var(--accent-soft)}
@@ -224,6 +227,7 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .exp-head h2{font-size:24px;font-weight:700;letter-spacing:-.03em}
 .exp-head .sub{font-size:13px;color:var(--ink-3);margin-top:3px}
 .exp-wrap{background:#fff;display:inline-block;padding:22px 24px}
+.exp-stage{position:fixed;left:-100000px;top:0;z-index:-1;pointer-events:none;background:#fff}
 /* ---------- calendar (old chip design) ---------- */
 .cal-dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:7px;padding:18px 20px 0}
 .cal-dow div{text-align:center;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
@@ -395,7 +399,7 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
      4. SEED                     — copy baked into this file
    ============================================================ */
 
-const BUILD='2026-08-03g';   // shown in the status bar so the live version is verifiable
+const BUILD='2026-08-03h';   // shown in the status bar so the live version is verifiable
 const LS  = 'moonshot.tracker.v3';
 const LSU = 'moonshot.ui.v1';
 let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
@@ -849,7 +853,7 @@ function viewMilestones(){
 
   return `<div class="card">
     <div class="card-h"><h2>Milestone Matrix</h2><span class="spacer"></span>
-      <button class="btn sm ${UI.strike?'on':''}" id="msStrike">Strike past</button></div>
+      <button class="btn sm ${UI.strike?'on':''}" id="msStrike">Strike through</button></div>
     <div class="bar">${outletChips()}</div>
     <div class="mtx-outer" id="msSlide" data-keepscroll="ms">
       <div class="slide-head">
@@ -1763,13 +1767,15 @@ function exportHeading(){
   }
   return null;
 }
+/* The artwork is rendered from an off-screen clone, so the page you are looking
+   at never resizes or flickers while an export runs. */
 function buildExportNode(t){
   const head=exportHeading();
   const lg=t.legend?document.getElementById('cpLegend'):null;
-  if(!head&&!lg)return {node:t.el,cleanup:()=>{}};
+  const stage=document.createElement('div');
+  stage.className='exporting exp-stage';
   const box=document.createElement('div');
   box.className='exp-wrap';
-  const parent=t.el.parentNode, next=t.el.nextSibling;
   if(head){
     const hd=document.createElement('div');
     hd.className='exp-head';
@@ -1777,16 +1783,20 @@ function buildExportNode(t){
       <h2>${head.title}</h2><div class="sub">${head.sub}</div>`;
     box.appendChild(hd);
   }
-  let lgClone=null;
   if(lg){
-    lgClone=lg.cloneNode(true);
+    const lgClone=lg.cloneNode(true);
     lgClone.style.borderTop='0';
     lgClone.style.padding='0 0 12px';
     box.appendChild(lgClone);
   }
-  parent.insertBefore(box,next);
-  box.appendChild(t.el);
-  return {node:box,cleanup:()=>{ parent.insertBefore(t.el,box); box.remove(); }};
+  const clone=t.el.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.style.maxHeight='none';
+  clone.style.overflow='visible';
+  box.appendChild(clone);
+  stage.appendChild(box);
+  document.body.appendChild(stage);
+  return {node:box,cleanup:()=>stage.remove()};
 }
 const PAGES={
   a4:      {name:'A4',            w:11.69, h:8.27,  fmt:'a4'},
@@ -1839,11 +1849,10 @@ async function exportImage(pdf,pageKey){
   const t=exportTarget();
   if(!t||!t.el){toast('Nothing to export');return;}
   toast('Rendering the full table…');
-  document.body.classList.add('exporting');
   const wrap=buildExportNode(t);
   const el=wrap.node;
   const prevW=el.style.width;
-  await new Promise(r=>setTimeout(r,80));   // let layout settle without sticky/fixed widths
+  await new Promise(r=>setTimeout(r,80));   // let the off-screen clone lay out
   try{
     const w=el.scrollWidth, hgt=el.scrollHeight;
     el.style.width=w+'px';
@@ -1870,7 +1879,6 @@ async function exportImage(pdf,pageKey){
   }catch(e){toast('Export failed: '+e.message);}
   el.style.width=prevW;
   wrap.cleanup();
-  document.body.classList.remove('exporting');
 }
 </script>
 
