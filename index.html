@@ -167,8 +167,9 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt .dh .dd{font-size:10.5px;font-weight:620;font-family:var(--mono)}
 .gt .dh .mo{font-size:7px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;min-height:9px}
 .gt .dh.we{background:#F0F0F3}
-.gt .dh.today{box-shadow:inset 0 -3px 0 var(--accent)}
-.gt .dh.today .dd{color:var(--accent)}
+.gt .dh.today{border-bottom:3px solid var(--accent)!important}
+.gt .dh.today .dd{color:var(--accent);font-weight:750}
+.gt .dh.today .dow,.gt .dh.today .mo{color:var(--accent)}
 .gt .dh.hol .dow,.gt .dh.hol .dd,.gt .dh.hol .mo{color:#fff}
 .gt tbody .d.we{background:#F7F7F9}
 .gt tbody .d.cell{cursor:pointer}
@@ -198,28 +199,50 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .exporting .gantt{max-height:none!important;overflow:visible!important}
 /* shrink the slide to its table so the heading block lines up with the columns */
 .exporting .mtx-outer{overflow:visible!important;padding:26px!important;display:inline-block!important;width:max-content!important;max-width:none!important}
-.exporting table.mtx{table-layout:auto!important;width:100%!important;margin:0!important}
+.exporting table.mtx{table-layout:fixed!important;width:auto!important;margin:0!important}
 .exporting .slide-head{width:100%}
-.exporting table.mtx th.lead,.exporting table.mtx td.lead{white-space:nowrap;width:auto!important}
-/* let multi-range dates wrap so the table stays compact instead of very wide */
-.exporting table.mtx thead th:not(.lead){max-width:300px;min-width:270px}
-.exporting table.mtx tbody td:not(.lead){max-width:300px;min-width:270px}
-.exporting table.mtx th.lead,.exporting table.mtx td.lead{max-width:none!important;width:auto!important;min-width:340px!important;white-space:nowrap!important;overflow:visible!important}
+/* Columns are pinned to a hard pixel width. The export is scaled to fit the page,
+   so if the columns were free to grow with the type the text would come out the
+   same size on paper — locking the grid is what makes the bigger font read bigger. */
+.exporting table.mtx thead th:not(.lead),
+.exporting table.mtx tbody td:not(.lead){width:300px!important;min-width:300px!important;max-width:300px!important}
+.exporting table.mtx th.lead,.exporting table.mtx td.lead{width:360px!important;min-width:360px!important;max-width:360px!important;white-space:normal!important;overflow:hidden!important;line-height:1.2!important}
 .exporting table.mtx tbody td .dt{white-space:normal!important;display:inline-block}
 /* presentation-sized type: readable when the slide is projected */
-.exporting table.mtx{font-size:22px!important}
-.exporting table.mtx thead th{padding:22px 18px!important;font-size:22px!important}
-.exporting table.mtx tbody td{height:84px!important;padding:12px 16px!important;vertical-align:middle}
-.exporting table.mtx tbody td.lead{font-size:22px!important;padding:0 22px 0 24px!important}
-.exporting table.mtx tbody td.lead .num{font-size:17px!important;margin-right:16px!important}
-.exporting table.mtx tbody td .dt{font-size:21px!important;padding:10px 8px!important}
-.exporting table.mtx tbody td .dt.rng{font-size:20px!important;line-height:1.35!important}
+.exporting table.mtx{font-size:27px!important}
+.exporting table.mtx thead th{padding:22px 16px!important;font-size:27px!important}
+.exporting table.mtx tbody td{height:96px!important;padding:12px 14px!important;vertical-align:middle}
+.exporting table.mtx tbody td.lead{font-size:26px!important;padding:0 18px 0 20px!important}
+.exporting table.mtx tbody td.lead .num{font-size:20px!important;margin-right:14px!important}
+.exporting table.mtx tbody td .dt{font-size:26px!important;padding:10px 7px!important;min-width:0!important}
+.exporting table.mtx tbody td .dt.rng{font-size:24px!important;line-height:1.35!important}
+.exporting table.mtx thead th.lead{font-size:16px!important}
 .exporting .slide-head h2{font-size:42px!important}
 .exporting .slide-head .eyebrow{font-size:15px!important}
 .exporting .slide-head .right b{font-size:20px!important}
 .exporting .slide-head{padding-bottom:20px!important;margin-bottom:24px!important}
 .exporting .cplegend{break-inside:avoid}
 .exporting .gbar{box-shadow:none!important}
+/* ---- calendar exports ---- */
+/* Without a pinned column width the month grid shrink-wraps to its widest chip
+   and the sheet comes out far wider than it needs to be. */
+.exporting [data-keepscroll]{max-height:none!important;overflow:visible!important}
+/* pinned so a phone export and a desktop export come out identical */
+.exporting .cal-dow,.exporting .cal-grid{grid-template-columns:repeat(7,200px)!important;width:max-content!important;gap:8px!important;padding-left:20px!important;padding-right:20px!important}
+.exporting .cal-grid{grid-auto-rows:minmax(120px,auto)!important}
+.exporting .cal-dow div{font-size:12px!important}
+.exporting .wk{grid-template-columns:repeat(7,240px)!important;width:max-content!important;gap:8px!important}
+.exporting .cell-day{padding:8px 9px!important;border-radius:12px!important}
+.exporting .cell-day,.exporting .wkcol{overflow:visible!important}
+.exporting .chip{padding:6px 9px!important;border-radius:8px!important}
+.exporting .chip .cn{font-size:12px!important}
+.exporting .chip .cp{font-size:11px!important}
+.exporting .cal-legend{max-width:1480px}
+/* today: a ring that html2canvas can actually draw */
+.exporting .cell-day.today{border:3px solid var(--accent)!important;padding:6px 7px!important;box-shadow:none!important}
+.exporting .wkcol.today{border:3px solid var(--accent)!important;padding:7px!important;box-shadow:none!important}
+.exporting .cell-day.today .dnum>span:first-child{border-width:2px!important}
+.exporting .gt .dh.today{box-shadow:none!important;border-bottom:3px solid var(--accent)!important}
 /* export headings */
 .exp-head{padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--line);background:#fff}
 .exp-head .eyebrow{display:block;margin-bottom:4px}
@@ -235,9 +258,11 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .cell-day.quiet{background:transparent;border-style:dashed}
 .cell-day .dnum{font-size:13px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums;line-height:1;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
 .cell-day.quiet .dnum{color:var(--ink-3);font-weight:500}
-.cell-day.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
-.cell-day.today .dnum>span:first-child{background:var(--accent);color:#fff;font-weight:700;min-width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin:-2px 0}
+/* today = ring, not fill. Borders (unlike box-shadow) rasterise reliably in exports. */
+.cell-day.today{border:2px solid var(--accent)!important;padding:7px 8px}
+.cell-day.today .dnum>span:first-child{color:var(--accent);font-weight:750;border:1.5px solid var(--accent);min-width:21px;height:21px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin:-3px 0;line-height:1}
 .cell-day.hol{background:var(--hb,#eee);border-color:transparent}
+.cell-day.today.hol .dnum>span:first-child{border-color:var(--ht,#fff);color:var(--ht,#fff)}
 .cell-day.hol .dnum,.cell-day.hol .hlbl{color:var(--ht,#fff)}
 .hlbl{font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.2;text-align:right}
 .dchips{display:flex;flex-direction:column;gap:5px}
@@ -253,7 +278,8 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .more:hover{color:var(--accent)}
 .wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:14px 20px 20px}
 .wkcol{background:#fff;border:1px solid var(--line);border-radius:12px;min-height:340px;padding:9px;display:flex;flex-direction:column;gap:6px}
-.wkcol.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.wkcol.today{border:2px solid var(--accent);padding:8px}
+.wkcol.today .wkhead{border-bottom-color:var(--accent)}
 .wkcol.today .wkhead span:first-child{color:var(--accent);font-weight:750}
 .wkhead{font-size:12.5px;font-weight:650;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
 .daylist{display:flex;flex-direction:column}
@@ -313,6 +339,12 @@ tr.dragover td{box-shadow:inset 0 2px 0 var(--accent)}
 .exopt .seg{width:100%;justify-content:stretch;box-shadow:none;border-radius:12px;padding:4px}
 .exopt .seg button{flex:1;padding:9px 10px;font-size:13px;border-radius:9px}
 .exopt select{width:100%;padding:10px 12px;font-size:13px;border-radius:11px}
+.pgbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.pgbtn{border:1px solid var(--line-2);background:var(--surface);border-radius:12px;padding:9px 12px;cursor:pointer;font:inherit;font-size:13px;font-weight:650;color:var(--ink-2);line-height:1.25;text-align:left;transition:border-color .14s,background .14s,color .14s}
+.pgbtn small{display:block;font-size:10.5px;font-weight:500;color:var(--ink-3);margin-top:2px;font-variant-numeric:tabular-nums}
+.pgbtn:hover{border-color:var(--accent);color:var(--ink)}
+.pgbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pgbtn.on small{color:rgba(255,255,255,.86)}
 .exopt label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:700;display:block;margin-bottom:7px}
 .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
 .fld>label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
@@ -417,6 +449,10 @@ function addDays(s,n){const d=s2d(s);d.setDate(d.getDate()+n);return d2s(d);}
 function diffDays(a,b){return Math.round((s2d(b)-s2d(a))/864e5);}
 function range(a,b){const o=[];let c=a,g=0;while(c<=b&&g++<3000){o.push(c);c=addDays(c,1);}return o;}
 function dowOf(s){return s2d(s).getDay();}
+/* Weeks run Monday → Sunday. mIdx() gives 0 for Monday … 6 for Sunday. */
+const DOWM=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function mIdx(s){return (dowOf(s)+6)%7;}
+function weekStart(s){return addDays(s,-mIdx(s));}
 function isWeekend(s){const d=dowOf(s);return d===0||d===6;}
 function fmt(s){if(!s)return '·';const d=s2d(s);return d.getDate()+' '+MON[d.getMonth()];}
 function fmtY(s){if(!s)return '·';const d=s2d(s);return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear();}
@@ -961,9 +997,9 @@ function viewCalendar(){
 function calMonth(){
   const first=UI.calDate.slice(0,7)+'-01';
   const d0=s2d(first),y=d0.getFullYear(),m=d0.getMonth();
-  const start=addDays(first,-d0.getDay());
+  const start=weekStart(first);
   const last=d2s(new Date(y,m+1,0));
-  const end=addDays(last,6-s2d(last).getDay());
+  const end=addDays(last,6-mIdx(last));
   const t=today();
   const cells=range(start,end).map(date=>{
     const inMo=date.slice(0,7)===first.slice(0,7);
@@ -974,11 +1010,11 @@ function calMonth(){
       <div class="dchips">${calChips(date,null)}</div>
     </div>`;
   }).join('');
-  return [`<div class="cal-dow">${DOW.map(d=>`<div>${d}</div>`).join('')}</div><div class="cal-grid">${cells}</div>`,
+  return [`<div class="cal-dow">${DOWM.map(d=>`<div>${d}</div>`).join('')}</div><div class="cal-grid">${cells}</div>`,
           MONF[m]+' '+y];
 }
 function calWeek(){
-  const start=addDays(UI.calDate,-dowOf(UI.calDate));
+  const start=weekStart(UI.calDate);
   const t=today();
   const cols=range(start,addDays(start,6)).map(date=>{
     const h=holidayOn(date); const dt=h?dayType(h.typeId):null;
@@ -1441,9 +1477,9 @@ function dayPicker(typeId){
   let month=([...owned].sort()[0]||today()).slice(0,7)+'-01';
   const draw=()=>{
     const d0=s2d(month), y=d0.getFullYear(), m=d0.getMonth();
-    const start=addDays(month,-d0.getDay());
+    const start=weekStart(month);
     const last=d2s(new Date(y,m+1,0));
-    const end=addDays(last,6-s2d(last).getDay());
+    const end=addDays(last,6-mIdx(last));
     const cells=range(start,end).map(d=>{
       const inMo=d.slice(0,7)===month.slice(0,7);
       const mine=owned.has(d), other=others.get(d);
@@ -1469,7 +1505,7 @@ function dayPicker(typeId){
         <b id="pk_mon" style="flex:1;text-align:center;font-family:var(--font-display)"></b>
         <button class="btn sm" id="pk_next">›</button>
       </div>
-      <div class="pk-dow">${DOW.map(x=>`<span>${x[0]}</span>`).join('')}</div>
+      <div class="pk-dow">${DOWM.map(x=>`<span>${x[0]}</span>`).join('')}</div>
       <div class="pk-grid" id="pk_grid"></div>
       <div class="hint" style="margin-top:10px"><span id="pk_count"></span> · click days to toggle</div>
     </div>
@@ -1771,7 +1807,7 @@ function exportHeading(){
     const mode=UI.calMode==='month'?'Month':UI.calMode==='week'?'Week':'Day';
     let title='';
     if(UI.calMode==='month'){const d=s2d(UI.calDate);title=MONF[d.getMonth()]+' '+d.getFullYear();}
-    else if(UI.calMode==='week'){const st=addDays(UI.calDate,-dowOf(UI.calDate));title='Week of '+fmtY(st);}
+    else if(UI.calMode==='week'){title='Week of '+fmtY(weekStart(UI.calDate));}
     else title=DOW[dowOf(UI.calDate)]+', '+fmtY(UI.calDate);
     const n=DB.outlets.filter(o=>UI.outlets.has(o.id)).length;
     return {title:esc(title),sub:mode+' view · '+n+' outlet'+(n===1?'':'s')};
@@ -1812,7 +1848,6 @@ function buildExportNode(t){
 const PAGES={
   a4:      {name:'A4',            w:11.69, h:8.27,  fmt:'a4'},
   a3:      {name:'A3',            w:16.54, h:11.69, fmt:'a3'},
-  letter:  {name:'Letter',        w:11.0,  h:8.5,   fmt:'letter'},
   legal:   {name:'Legal',         w:14.0,  h:8.5,   fmt:'legal'},
   slide:   {name:'Slide 16:9',    w:13.333,h:7.5,   fmt:[960,540]},
   fit:     {name:'Fit to content',w:0,     h:0,     fmt:null}
@@ -1829,28 +1864,30 @@ function exportMenu(){
       <div class="exopt">
         <div><label>Format</label>
           <div class="seg" id="ex_type">
-            <button data-et="pdf" class="on">PDF</button>
-            <button data-et="png">PNG</button>
+            <button data-et="png" class="on">PNG</button>
+            <button data-et="pdf">PDF</button>
             ${canXl?'<button data-et="xlsx">Excel</button>':''}
           </div></div>
         <div id="ex_pagewrap"><label>Page size</label>
-          <select id="ex_page">
-            ${Object.entries(PAGES).map(([k,v])=>`<option value="${k}" ${k==='a4'?'selected':''}>${v.name}${v.w?` — ${v.w} × ${v.h} in`:''}</option>`).join('')}
-          </select>
-          <div class="hint" style="margin-top:8px">300 PPI, landscape, scaled to fit the page.</div>
+          <div class="pgbtns" id="ex_page">
+            ${Object.entries(PAGES).map(([k,v])=>`<button class="pgbtn ${k==='a4'?'on':''}" data-pg="${k}">${v.name}${v.w?`<small>${v.w} × ${v.h} in</small>`:'<small>no fixed page</small>'}</button>`).join('')}
+          </div>
         </div>
       </div>
     </div>
     <div class="mod-f"><button class="btn pri" id="ex_go">Export</button>
       <span class="spacer"></span><button class="btn" onclick="closeModal()">Cancel</button></div></div>`);
-  let type='pdf';
+  let type='png', page='a4';
   document.querySelectorAll('#ex_type [data-et]').forEach(b=>b.onclick=()=>{
     type=b.dataset.et;
     document.querySelectorAll('#ex_type button').forEach(x=>x.classList.toggle('on',x===b));
     document.getElementById('ex_pagewrap').style.display=type==='xlsx'?'none':'';
   });
+  document.querySelectorAll('#ex_page [data-pg]').forEach(b=>b.onclick=()=>{
+    page=b.dataset.pg;
+    document.querySelectorAll('#ex_page .pgbtn').forEach(x=>x.classList.toggle('on',x===b));
+  });
   document.getElementById('ex_go').onclick=()=>{
-    const page=document.getElementById('ex_page').value;
     closeModal();
     if(type==='xlsx')exportExcel(UI.outlet);
     else exportImage(type==='pdf',page);
