@@ -167,7 +167,7 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 /* Painted as a background-image so it composites over the weekend grey and, on
    the sticky columns, over an opaque surface colour that must stay opaque. */
 .gt tbody tr[data-rt] .d.rtc{background-image:linear-gradient(var(--rt),var(--rt))}
-.gt tbody tr[data-rt] .fc{background-image:linear-gradient(var(--rtf),var(--rtf))}
+.gt tbody tr[data-rt] .fc{background-image:linear-gradient(var(--rt),var(--rt))}
 .gt thead th{position:sticky;top:0;z-index:4;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
 .gt .d{width:var(--cell);min-width:var(--cell);max-width:var(--cell);border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .gt tbody tr{height:var(--cell)}
@@ -182,13 +182,14 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt .dh.today{border-bottom:3px solid var(--today)!important;background:var(--today-soft)}
 .gt .dh.today .dd{color:var(--today);font-weight:750}
 .gt .dh.today .dow,.gt .dh.today .mo{color:var(--today)}
-.gt .dh.hol .dow,.gt .dh.hol .dd,.gt .dh.hol .mo{color:#fff}
+.gt .dh.hol .dow,.gt .dh.hol .dd,.gt .dh.hol .mo{color:var(--holink,#fff)}
+.gt .dh.hol{border-right-color:transparent}
+.gt tbody .d.holcol{border-right-color:transparent;border-bottom-color:transparent}
 .gt tbody .d.we{background-color:#F7F7F9}
 .gt tbody .d.cell{cursor:pointer}
 .gt tbody .d.cell:hover{box-shadow:inset 0 0 0 2px var(--accent)}
-.gbar{position:absolute;inset:1.5px 0;background:var(--barc,#2b3d4d);border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);z-index:2}
-.gbar.s{left:2px;border-radius:6px 3px 3px 6px}
-.gbar.e{right:2px;border-radius:3px 6px 6px 3px}
+.gbar{position:absolute;inset:0;background:var(--barc,#2b3d4d);z-index:2}
+.gbar.s,.gbar.e{border-radius:0}
 .gbar.ms::after{content:"";position:absolute;top:50%;left:50%;width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg);background:#fff;border-radius:1px}
 .holcurtain{position:absolute;inset:0;pointer-events:none;z-index:1}
 .tname{font-weight:550;line-height:1.15;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px}
@@ -493,6 +494,15 @@ function darken(hex,f){
   const n=parseInt(hex.slice(1),16);
   const r=Math.round(((n>>16)&255)*(1-f)), g=Math.round(((n>>8)&255)*(1-f)), b=Math.round((n&255)*(1-f));
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+/** Ink that stays legible on a given background — white only when the fill is
+    genuinely dark. Uses perceived luminance, not a plain average. */
+function onColor(hex){
+  const n=parseInt(String(hex||'#888').slice(1),16);
+  if(!isFinite(n))return '#1D1D1F';
+  const r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  return (0.299*r+0.587*g+0.114*b)>150 ? '#1D1D1F' : '#ffffff';
 }
 
 /* ---------- lookups ---------- */
@@ -1142,7 +1152,9 @@ function viewCritical(){
   if(UI.cpEdit&&(!UI.cpSnap||UI.cpSnap.id!==o.id))UI.cpSnap={id:o.id,json:JSON.stringify(o)};
 
   const [ws0,we0]=outletSpan(o);
-  const ws=addDays(ws0,-3), we=addDays(we0,14);   // padding: room to drag work earlier or later
+  // One column past the last task date. Edit mode keeps a runway so work can
+  // still be dragged later — there's no other way to extend a task.
+  const ws=addDays(ws0,-3), we=addDays(we0,UI.cpEdit?14:1);
   const days=range(ws,we);
   const t=today();
   const cols=cpCols(o);
@@ -1158,7 +1170,7 @@ function viewCritical(){
     const worked=h&&(o.worksOn||[]).includes(d);
     const dd=s2d(d);
     return `<th class="d dh ${isWeekend(d)?'we':''} ${d===t?'today':''} ${h?'hol':''}"
-      style="${h?`background:${dt.color};`:''}" data-hday="${d}"
+      style="${h?`background:${dt.color};--holink:${onColor(dt.color)};`:''}" data-hday="${d}"
       title="${h?esc(holLabel(h))+(worked?' — '+esc(o.name)+' works this day':''):''}">
       <div class="dow">${DOW[dd.getDay()][0]}</div>
       <div class="dd">${dd.getDate()}</div>
@@ -1178,7 +1190,7 @@ function viewCritical(){
       const first=on&&!act.has(addDays(d,-1)), last=on&&!act.has(addDays(d,1));
       // a special-day column is filled in every cell except the ones carrying work
       const curtain=(h&&!on)?`<div class="holcurtain" style="background:${dayType(h.typeId).color}"></div>`:'';
-      return `<td class="d ${UI.cpEdit?'cell':''} ${isWeekend(d)?'we':''} ${lead?'rtc':''}" ${UI.cpEdit?`data-cell="${task.id}" data-d="${d}"`:''}>
+      return `<td class="d ${UI.cpEdit?'cell':''} ${isWeekend(d)?'we':''} ${lead?'rtc':''} ${h?'holcol':''}" ${UI.cpEdit?`data-cell="${task.id}" data-d="${d}"`:''}>
         ${curtain}${on?`<div class="gbar ${first?'s':''} ${last?'e':''}" style="--barc:${c.color}"></div>`:''}</td>`;
     }).join('');
 
@@ -1213,7 +1225,7 @@ function viewCritical(){
        absolutely positioned and opaque), so marked squares stay their own colour.
        Uncategorised tasks get nothing. */
     const tinted=!!task.cat&&!!cat(task.cat);
-    return `<tr data-row="${task.id}"${tinted?` data-rt style="--rt:${c.color}5C;--rtf:${c.color}26"`:''}>${fixed}${cells}</tr>`;
+    return `<tr data-row="${task.id}"${tinted?` data-rt style="--rt:${c.color}4D"`:''}>${fixed}${cells}</tr>`;
   }).join('');
 
   const sug=(DB.suggestedHolidays||[]).filter(s=>!holidayOn(s.date));
@@ -1224,8 +1236,8 @@ function viewCritical(){
       <select id="cpOutlet">${DB.outlets.map(x=>`<option value="${x.id}" ${x.id===o.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
       <span class="sub hidesm">${fmtY(ws0)} → ${fmtY(we0)}</span>
       <span class="spacer"></span>
-      <button class="btn sm ${UI.cpFollow===false?'':'on'}" id="cpFollow" title="Pan the chart to the tasks you scroll to">Follow</button>
       <label class="swt" title="Turn on to edit tasks and work days"><input type="checkbox" id="editSwitch" ${UI.cpEdit?'checked':''}><span class="knob"></span>Edit</label>
+      <button class="btn sm ${UI.cpFollow===false?'':'on'}" id="cpFollow" title="Pan the chart to the tasks you scroll to">Follow</button>
       ${UI.cpEdit?'<button class="btn sm pri" id="cpAdd">Add task</button>':''}
       ${UI.cpEdit&&UI.cpSnap?'<button class="btn sm" id="cpDiscard" title="Undo every change made since Edit was switched on">Discard changes</button>':''}
       <button class="btn sm" id="cpToday">Today</button>
@@ -1478,13 +1490,13 @@ function viewManage(){
   <div class="card">
     <div class="card-h"><h2>Data</h2></div>
     <div class="card-b" style="display:flex;flex-direction:column;gap:12px">
-      <div id="syncSlot"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn pri" id="btnImport">Import Excel</button>
         <button class="btn" id="bkDown">Download backup</button>
         <button class="btn" id="bkXlsx">Export critical paths (Excel)</button>
         <button class="btn" id="bkUp">Restore from a backup file</button>
       </div>
+      <div id="syncSlot"></div>
     </div>
   </div>
 
