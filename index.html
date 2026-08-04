@@ -173,6 +173,11 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt tbody tr{height:var(--cell)}
 .gt tbody .d{position:relative;height:var(--cell);padding:0}
 .gt tbody .fc{height:var(--cell);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* One type treatment for every body cell — the mono dates and the smaller
+   resp/dept text all fall in line. Only the headings keep their own styling. */
+.gt tbody .fc,.gt tbody .fc.mono,.gt tbody .fc.wrap,.gt tbody .tname{
+  font-family:var(--font)!important;font-size:11px!important;font-weight:500;
+  line-height:1.2;letter-spacing:0;color:var(--ink)}
 .gt tbody .fc>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gt .dh{padding:3px 0 4px;line-height:1.1;vertical-align:bottom}
 .gt .dh .dow{font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:650}
@@ -183,8 +188,8 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt .dh.today .dd{color:var(--today);font-weight:750}
 .gt .dh.today .dow,.gt .dh.today .mo{color:var(--today)}
 .gt .dh.hol .dow,.gt .dh.hol .dd,.gt .dh.hol .mo{color:var(--holink,#fff)}
-.gt .dh.hol{border-right-color:transparent}
-.gt tbody .d.holcol{border-right-color:transparent;border-bottom-color:transparent}
+.gt .dh.hol{border-right-color:var(--holc,transparent)}
+.gt tbody .d.holcol{border-right-color:var(--holc,transparent);border-bottom-color:var(--holc,transparent)}
 .gt tbody .d.we{background-color:#F7F7F9}
 .gt tbody .d.cell{cursor:pointer}
 .gt tbody .d.cell:hover{box-shadow:inset 0 0 0 2px var(--accent)}
@@ -496,13 +501,15 @@ function darken(hex,f){
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
 
-/** Ink that stays legible on a given background — white only when the fill is
-    genuinely dark. Uses perceived luminance, not a plain average. */
+/** Ink that stays legible on a given background. Dark fills take white; light
+    fills take a deepened version of their own hue rather than generic black, so
+    the header still reads as belonging to that day type. */
 function onColor(hex){
-  const n=parseInt(String(hex||'#888').slice(1),16);
+  const h=String(hex||'#888888');
+  const n=parseInt(h.slice(1),16);
   if(!isFinite(n))return '#1D1D1F';
   const r=(n>>16)&255, g=(n>>8)&255, b=n&255;
-  return (0.299*r+0.587*g+0.114*b)>150 ? '#1D1D1F' : '#ffffff';
+  return (0.299*r+0.587*g+0.114*b)>150 ? darken(h,.62) : '#ffffff';
 }
 
 /* ---------- lookups ---------- */
@@ -1170,7 +1177,7 @@ function viewCritical(){
     const worked=h&&(o.worksOn||[]).includes(d);
     const dd=s2d(d);
     return `<th class="d dh ${isWeekend(d)?'we':''} ${d===t?'today':''} ${h?'hol':''}"
-      style="${h?`background:${dt.color};--holink:${onColor(dt.color)};`:''}" data-hday="${d}"
+      style="${h?`background:${dt.color};--holink:${onColor(dt.color)};--holc:${dt.color};`:''}" data-hday="${d}"
       title="${h?esc(holLabel(h))+(worked?' — '+esc(o.name)+' works this day':''):''}">
       <div class="dow">${DOW[dd.getDay()][0]}</div>
       <div class="dd">${dd.getDate()}</div>
@@ -1190,7 +1197,8 @@ function viewCritical(){
       const first=on&&!act.has(addDays(d,-1)), last=on&&!act.has(addDays(d,1));
       // a special-day column is filled in every cell except the ones carrying work
       const curtain=(h&&!on)?`<div class="holcurtain" style="background:${dayType(h.typeId).color}"></div>`:'';
-      return `<td class="d ${UI.cpEdit?'cell':''} ${isWeekend(d)?'we':''} ${lead?'rtc':''} ${h?'holcol':''}" ${UI.cpEdit?`data-cell="${task.id}" data-d="${d}"`:''}>
+      return `<td class="d ${UI.cpEdit?'cell':''} ${isWeekend(d)?'we':''} ${lead?'rtc':''} ${h?'holcol':''}"
+        ${h?`style="--holc:${dayType(h.typeId).color}"`:''} ${UI.cpEdit?`data-cell="${task.id}" data-d="${d}"`:''}>
         ${curtain}${on?`<div class="gbar ${first?'s':''} ${last?'e':''}" style="--barc:${c.color}"></div>`:''}</td>`;
     }).join('');
 
@@ -1223,9 +1231,10 @@ function viewCritical(){
     }).join('');
     /* Row tint sits *under* the bars and the special-day curtains (both are
        absolutely positioned and opaque), so marked squares stay their own colour.
-       Uncategorised tasks get nothing. */
-    const tinted=!!task.cat&&!!cat(task.cat);
-    return `<tr data-row="${task.id}"${tinted?` data-rt style="--rt:${c.color}4D"`:''}>${fixed}${cells}</tr>`;
+       Uncategorised tasks, and categories opted out on Setup, get nothing. */
+    const cc=cat(task.cat);
+    const tinted=!!cc&&cc.inCritical!==false;
+    return `<tr data-row="${task.id}"${tinted?` data-rt style="--rt:${c.color}26"`:''}>${fixed}${cells}</tr>`;
   }).join('');
 
   const sug=(DB.suggestedHolidays||[]).filter(s=>!holidayOn(s.date));
@@ -1439,6 +1448,7 @@ function viewManage(){
       <td><input type="text" value="${esc(c.name)}" data-cname="${c.id}" placeholder="Category name" style="width:100%;min-width:180px"></td>
       <td class="mono">${n}</td>
       <td><label class="cbrow"><input type="checkbox" data-cms="${c.id}" ${c.inMilestones?'checked':''}> Milestone</label></td>
+      <td><label class="cbrow"><input type="checkbox" data-ccp="${c.id}" ${c.inCritical!==false?'checked':''}> Colour rows</label></td>
       <td><button class="ibtn del" data-cdel="${c.id}">✕</button></td>
     </tr>`;}).join('');
 
@@ -1504,8 +1514,8 @@ function viewManage(){
     <div class="card-h"><h2>Categories</h2><span class="spacer"></span>
       <button class="btn sm pri" id="catAdd">+ Add</button></div>
     <div class="scroll" style="max-height:340px" data-keepscroll="cats"><table class="tbl"><thead><tr>
-      <th></th><th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th></th></tr></thead>
-      <tbody>${catRows||'<tr><td colspan="6" class="hint" style="padding:14px">None yet — press + Add.</td></tr>'}</tbody></table></div>
+      <th></th><th></th><th>Name</th><th>Tasks</th><th>Milestone</th><th title="Tint this category's task rows in the critical path">Colour rows</th><th></th></tr></thead>
+      <tbody>${catRows||'<tr><td colspan="7" class="hint" style="padding:14px">None yet — press + Add.</td></tr>'}</tbody></table></div>
   </div>
 
   <div class="card">
@@ -2158,7 +2168,7 @@ function wire(){
   /* ---- setup ---- */
   on('catAdd',()=>{
     const PAL=['#0071E3','#34C759','#FF9500','#AF52DE','#FF2D55','#00897B','#A2845E','#5856D6'];
-    DB.categories.push({id:uid('c'),name:'',color:PAL[DB.categories.length%PAL.length],inMilestones:true,inCalendar:true});
+    DB.categories.push({id:uid('c'),name:'',color:PAL[DB.categories.length%PAL.length],inMilestones:true,inCalendar:true,inCritical:true});
     markDirty(); render();
     const inp=document.querySelector('#app .card:first-child tbody tr:last-child [data-cname]');
     if(inp)inp.focus();
@@ -2185,6 +2195,7 @@ function wire(){
   document.querySelectorAll('[data-ccol]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.ccol);if(c){c.color=i.value;markDirty();render();}});
   document.querySelectorAll('[data-cname]').forEach(i=>i.onchange=()=>{const c=cat(i.dataset.cname);if(c){c.name=i.value.trim();markDirty();render();}});
   document.querySelectorAll('[data-cms]').forEach(i=>i.onchange=()=>{cat(i.dataset.cms).inMilestones=i.checked;markDirty();render();});
+  document.querySelectorAll('[data-ccp]').forEach(i=>i.onchange=()=>{cat(i.dataset.ccp).inCritical=i.checked;markDirty();render();});
   document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=async()=>{
     const c=cat(b.dataset.cdel); if(!c)return;
     if(!await uiConfirm(`Delete <b>${esc(c.name)}</b>? Its tasks become uncategorised.`,{title:'Delete category',ok:'Delete',danger:true}))return;
