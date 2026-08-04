@@ -140,9 +140,12 @@ table.mtx tbody td .dt{display:inline-block;min-width:44px;padding:6px 5px;borde
 table.mtx tbody td .dt.rng{font-size:12px;white-space:normal}
 table.mtx tbody td .dt.pick{cursor:pointer}
 table.mtx tbody td .dt.pick:hover{background:var(--accent-soft)}
-table.mtx tbody td .dt .pt{display:block;white-space:nowrap}
+table.mtx tbody td .dt .pt{display:block;width:fit-content;margin-left:auto;margin-right:auto;white-space:nowrap;position:relative}
 table.mtx tbody td .dt.done{opacity:.6}
-table.mtx tbody td .dt.done .pt{text-decoration:line-through;text-decoration-thickness:2px}
+/* An element, not text-decoration: html2canvas draws line-through at its own
+   hairline thickness regardless of scale, so exports lost the strike. A box
+   rasterises at the same weight you see on screen. */
+table.mtx tbody td .dt.done .pt::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:currentColor;border-radius:1px;pointer-events:none}
 table.mtx tbody tr.hand td{border-top:2px solid var(--line-2)}
 table.mtx tbody tr.hand td.lead{font-weight:700}
 table.mtx tbody tr.launch td.lead{font-weight:700;color:var(--accent);background:var(--accent-soft)}
@@ -156,7 +159,11 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt .fc{position:sticky;z-index:3;background:var(--surface);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0 8px;text-align:left;vertical-align:middle;font-size:11px}
 .gt .fc.last{border-right:2px solid var(--line-2)}
 .gt thead .fc{z-index:7;top:0;background:var(--surface-2);border-bottom:1px solid var(--line-2);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:700;vertical-align:bottom;padding-bottom:8px}
-.gt tbody tr:hover .fc{background:#F5F9FE}
+.gt tbody tr:hover .fc{background-color:#F5F9FE}
+/* Painted as a background-image so it composites over the weekend grey and, on
+   the sticky columns, over an opaque surface colour that must stay opaque. */
+.gt tbody tr[data-rt] .d{background-image:linear-gradient(var(--rt),var(--rt))}
+.gt tbody tr[data-rt] .fc{background-image:linear-gradient(var(--rtf),var(--rtf))}
 .gt thead th{position:sticky;top:0;z-index:4;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
 .gt .d{width:var(--cell);min-width:var(--cell);max-width:var(--cell);border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
 .gt tbody tr{height:var(--cell)}
@@ -172,7 +179,7 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
 .gt .dh.today .dd{color:var(--today);font-weight:750}
 .gt .dh.today .dow,.gt .dh.today .mo{color:var(--today)}
 .gt .dh.hol .dow,.gt .dh.hol .dd,.gt .dh.hol .mo{color:#fff}
-.gt tbody .d.we{background:#F7F7F9}
+.gt tbody .d.we{background-color:#F7F7F9}
 .gt tbody .d.cell{cursor:pointer}
 .gt tbody .d.cell:hover{box-shadow:inset 0 0 0 2px var(--accent)}
 .gbar{position:absolute;inset:1.5px 0;background:var(--barc,#2b3d4d);border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);z-index:2}
@@ -206,18 +213,22 @@ table.mtx tbody tr.launch td{background:rgba(80,147,83,.06)}
    so if the columns were free to grow with the type the text would come out the
    same size on paper — locking the grid is what makes the bigger font read bigger. */
 .exporting table.mtx thead th:not(.lead),
-.exporting table.mtx tbody td:not(.lead){width:300px!important;min-width:300px!important;max-width:300px!important}
+.exporting table.mtx tbody td:not(.lead){width:310px!important;min-width:310px!important;max-width:310px!important}
 .exporting table.mtx th.lead,.exporting table.mtx td.lead{width:auto!important;min-width:0!important;max-width:none!important;white-space:nowrap!important;overflow:visible!important;line-height:1.2!important}
 .exporting table.mtx tbody td .dt{white-space:normal!important;display:inline-block}
-/* presentation-sized type: readable when the slide is projected */
-.exporting table.mtx{font-size:27px!important}
-.exporting table.mtx thead th{padding:22px 16px!important;font-size:27px!important}
-.exporting table.mtx tbody td{height:96px!important;padding:12px 14px!important;vertical-align:middle}
-.exporting table.mtx tbody td.lead{font-size:24px!important;padding:0 18px 0 20px!important}
-.exporting table.mtx tbody td.lead .num{font-size:18px!important;margin-right:12px!important}
-.exporting table.mtx tbody td .dt{font-size:26px!important;padding:10px 7px!important;min-width:0!important}
-.exporting table.mtx tbody td .dt.rng{font-size:24px!important;line-height:1.35!important}
-.exporting table.mtx thead th.lead{font-size:16px!important}
+/* presentation-sized type: readable when the slide is projected.
+   Padding is kept tight on purpose — the export scales to fit the page, so every
+   pixel spent on padding is a pixel the type has to give back. */
+.exporting table.mtx{font-size:30px!important}
+.exporting table.mtx thead th{padding:20px 12px!important;font-size:28px!important;text-align:center!important}
+.exporting table.mtx tbody td{height:104px!important;padding:10px 8px!important;vertical-align:middle}
+.exporting table.mtx tbody td.lead{font-size:26px!important;padding:0 20px 0 18px!important}
+.exporting table.mtx tbody td.lead .num{font-size:20px!important;margin-right:13px!important}
+.exporting table.mtx tbody td .dt{font-size:32px!important;padding:8px 5px!important;min-width:0!important}
+.exporting table.mtx tbody td .dt.rng{font-size:28px!important;line-height:1.32!important}
+.exporting table.mtx thead th.lead{font-size:17px!important;text-align:center!important}
+.exporting table.mtx tbody td .dt.done{opacity:.72!important}
+.exporting table.mtx tbody td .dt.done .pt::after{height:3px!important}
 .exporting .slide-head h2{font-size:42px!important}
 .exporting .slide-head .eyebrow{font-size:15px!important}
 .exporting .slide-head .right b{font-size:20px!important}
@@ -314,6 +325,15 @@ tr.dragover td{box-shadow:inset 0 2px 0 var(--accent)}
 .pk.on{color:#fff;font-weight:700}
 .pk.out{opacity:.35}
 .pk.busy{background:var(--surface-2);color:var(--ink-3);cursor:not-allowed;border-style:dashed}
+.pk-bulk{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
+.pk-bulk>label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:700;display:block;margin-bottom:7px}
+.pk-wd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.pkd{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:6px 0;font:inherit;font-size:11px;font-weight:650;color:var(--ink-2);cursor:pointer;transition:.12s}
+.pkd:hover{border-color:var(--accent)}
+.pkd.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pk-span{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.pk-span input{flex:1;min-width:0;padding:6px 8px;font-size:12px;border-radius:8px}
+.pk-span span{color:var(--ink-3);font-size:12px}
 
 /* ---------- outlet cards ---------- */
 .ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:16px 20px}
@@ -399,7 +419,6 @@ tr.dragover td{box-shadow:inset 0 2px 0 var(--accent)}
     <div class="spacer"></div>
     <nav class="seg" id="tabs"></nav>
     <div class="spacer"></div>
-    <button class="btn sm ghost" id="btnImport">Import Excel</button>
     <button class="btn sm dark" id="btnExport">Export</button>
   </div>
 </header>
@@ -725,6 +744,10 @@ function renderSync(){
   const el=document.getElementById('sync');
   let cls='sync-in', html='';
   const n=DB?DB.outlets.length:0, t=DB?DB.outlets.reduce((a,o)=>a+o.tasks.length,0):0;
+  /* The status line only belongs on Setup — but an offline state is a warning
+     worth showing wherever you are, since changes are sitting on the device. */
+  const offline=!(cloud.state==='saving'||autoT||cloud.state==='ok'||cloud.state==='empty');
+  if(UI.view!=='manage'&&!offline){ el.innerHTML=''; return; }
   if(cloud.state==='saving'||autoT){
     html=`<span class="dot2 c"></span>Saving…`;
   }else if(cloud.state==='ok'){
@@ -1099,6 +1122,9 @@ function viewCritical(){
   if(!o) return `<div class="card"><div class="card-b">
     No outlets yet. <button class="btn pri" id="btnImport2">Import a critical path from Excel</button></div></div>`;
   UI.outlet=o.id;
+  // Safety net: if edit is on but no baseline exists (or it belongs to another
+  // outlet), take one now so Discard is always meaningful.
+  if(UI.cpEdit&&(!UI.cpSnap||UI.cpSnap.id!==o.id))UI.cpSnap={id:o.id,json:JSON.stringify(o)};
 
   const [ws0,we0]=outletSpan(o);
   const ws=addDays(ws0,-3), we=addDays(we0,14);   // padding: room to drag work earlier or later
@@ -1164,7 +1190,11 @@ function viewCritical(){
       }
       return '';
     }).join('');
-    return `<tr data-row="${task.id}">${fixed}${cells}</tr>`;
+    /* Row tint sits *under* the bars and the special-day curtains (both are
+       absolutely positioned and opaque), so marked squares stay their own colour.
+       Uncategorised tasks get nothing. */
+    const tinted=!!task.cat&&!!cat(task.cat);
+    return `<tr data-row="${task.id}"${tinted?` data-rt style="--rt:${c.color}8C;--rtf:${c.color}24"`:''}>${fixed}${cells}</tr>`;
   }).join('');
 
   const sug=(DB.suggestedHolidays||[]).filter(s=>!holidayOn(s.date));
@@ -1178,6 +1208,7 @@ function viewCritical(){
       <button class="btn sm ${UI.cpFollow===false?'':'on'}" id="cpFollow" title="Pan the chart to the tasks you scroll to">Follow</button>
       <label class="swt" title="Turn on to edit tasks and work days"><input type="checkbox" id="editSwitch" ${UI.cpEdit?'checked':''}><span class="knob"></span>Edit</label>
       ${UI.cpEdit?'<button class="btn sm pri" id="cpAdd">Add task</button>':''}
+      ${UI.cpEdit&&UI.cpSnap?'<button class="btn sm" id="cpDiscard" title="Undo every change made since Edit was switched on">Discard changes</button>':''}
       <button class="btn sm" id="cpToday">Today</button>
       ${UI.cpEdit?'<button class="btn sm dngr" id="cpDelOut">Delete outlet</button>':''}
     </div>
@@ -1463,8 +1494,9 @@ function viewManage(){
   </div>
 
   <div class="card">
-    <div class="card-h"><h2>Backup</h2></div>
+    <div class="card-h"><h2>Data</h2></div>
     <div class="card-b" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn pri" id="btnImport">Import Excel</button>
       <button class="btn" id="bkDown">Download backup</button>
       <button class="btn" id="bkXlsx">Export critical paths (Excel)</button>
       <button class="btn" id="bkUp">Restore from a backup file</button>
@@ -1499,7 +1531,7 @@ function dayPicker(typeId){
       draw();
     });
   };
-  showModal(`<div class="mod" style="width:min(430px,100%)">
+  showModal(`<div class="mod" style="width:min(470px,100%)">
     <div class="mod-h"><h3>${esc(dt.name||'Special days')}</h3><span class="spacer"></span>
       <button class="x" onclick="closeModal()">✕</button></div>
     <div class="mod-b">
@@ -1511,9 +1543,49 @@ function dayPicker(typeId){
       <div class="pk-dow">${DOWM.map(x=>`<span>${x[0]}</span>`).join('')}</div>
       <div class="pk-grid" id="pk_grid"></div>
       <div class="hint" style="margin-top:10px"><span id="pk_count"></span> · click days to toggle</div>
+      <div class="pk-bulk">
+        <label>Repeat every…</label>
+        <div class="pk-wd" id="pk_wd">${DOWM.map((d,i)=>`<button class="pkd" data-wd="${i}">${d}</button>`).join('')}</div>
+        <div class="pk-span">
+          <input type="date" id="pk_from"><span>→</span><input type="date" id="pk_to">
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn sm" id="pk_bulkadd">Mark these</button>
+          <button class="btn sm ghost" id="pk_bulkdel">Unmark these</button>
+        </div>
+        <div class="hint" style="margin-top:7px">Days already taken by another type are skipped.</div>
+      </div>
     </div>
     <div class="mod-f"><button class="btn pri" id="pk_save">Apply</button>
       <span class="spacer"></span><button class="btn" onclick="closeModal()">Cancel</button></div></div>`);
+  /* Bulk marker: pick weekdays, pick a span, apply. Defaults to the calendar year
+     you're looking at, which is the usual case for Poya days, stock counts, etc. */
+  const wd=new Set();
+  const yr=month.slice(0,4);
+  document.getElementById('pk_from').value=yr+'-01-01';
+  document.getElementById('pk_to').value=yr+'-12-31';
+  document.querySelectorAll('#pk_wd .pkd').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.wd;
+    if(wd.has(i))wd.delete(i); else wd.add(i);
+    b.classList.toggle('on',wd.has(i));
+  });
+  const bulk=add=>{
+    if(!wd.size){toast('Pick at least one weekday');return;}
+    const a=document.getElementById('pk_from').value, b=document.getElementById('pk_to').value;
+    if(!a||!b||a>b){toast('Check the date range');return;}
+    let n=0, skipped=0;
+    range(a,b).forEach(d=>{
+      if(!wd.has(mIdx(d)))return;
+      if(add){
+        if(others.has(d)){skipped++;return;}     // another type already owns this day
+        if(!owned.has(d)){owned.add(d);n++;}
+      }else if(owned.delete(d))n++;
+    });
+    draw();
+    toast(`${add?'Marked':'Unmarked'} ${n} day${n===1?'':'s'}`+(skipped?` · ${skipped} skipped`:''));
+  };
+  document.getElementById('pk_bulkadd').onclick=()=>bulk(true);
+  document.getElementById('pk_bulkdel').onclick=()=>bulk(false);
   document.getElementById('pk_prev').onclick=()=>{const d=s2d(month);d.setMonth(d.getMonth()-1);month=d2s(d).slice(0,7)+'-01';draw();};
   document.getElementById('pk_next').onclick=()=>{const d=s2d(month);d.setMonth(d.getMonth()+1);month=d2s(d).slice(0,7)+'-01';draw();};
   document.getElementById('pk_save').onclick=()=>{
@@ -1974,7 +2046,12 @@ function wire(){
   document.querySelectorAll('.chip[data-day],.more[data-day]').forEach(b=>b.onclick=()=>dayDrill(b.dataset.day));
 
   /* ---- critical path ---- */
-  const cpo=$('cpOutlet'); if(cpo)cpo.onchange=()=>{UI.outlet=cpo.value;render();};
+  const cpo=$('cpOutlet'); if(cpo)cpo.onchange=()=>{
+    UI.outlet=cpo.value;
+    // Discard is scoped to one outlet, so re-baseline when you move to another.
+    if(UI.cpEdit){ const o=outletOf(UI.outlet); UI.cpSnap=o?{id:o.id,json:JSON.stringify(o)}:null; }
+    render();
+  };
   on('cpFollow',()=>{UI.cpFollow=UI.cpFollow===false;render();});
   on('cpAdd',()=>{
     const o=outletOf(UI.outlet); if(!o)return;
@@ -2160,7 +2237,21 @@ function wire(){
   on('bkUp',()=>$('fileJs').click());
 
   const sw=$('editSwitch');
-  if(sw){ sw.onchange=()=>{UI.cpEdit=sw.checked;render();}; }
+  if(sw){ sw.onchange=()=>{
+    UI.cpEdit=sw.checked;
+    // Snapshot on the way in so Discard has something to roll back to; drop it on the way out.
+    if(sw.checked){ const o=outletOf(UI.outlet); UI.cpSnap=o?{id:o.id,json:JSON.stringify(o)}:null; }
+    else UI.cpSnap=null;
+    render();
+  }; }
+  on('cpDiscard',()=>{
+    const s=UI.cpSnap; if(!s)return;
+    const i=DB.outlets.findIndex(x=>x.id===s.id);
+    if(i<0){ toast('That outlet no longer exists'); UI.cpSnap=null; render(); return; }
+    if(!confirm('Discard every change made to this outlet since Edit was switched on?'))return;
+    DB.outlets[i]=JSON.parse(s.json);
+    markDirty(); toast('Changes discarded'); render();
+  });
 
   /* ---- persistent chrome ---- */
   on('btnExport',exportMenu);
