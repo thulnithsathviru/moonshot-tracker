@@ -458,10 +458,15 @@ const SEED = {"version":3,"generatedAt":"2026-07-31","source":"Critical_Paths.xl
      4. SEED                     — copy baked into this file
    ============================================================ */
 
-const BUILD='2026-08-03l';   // shown in the status bar so the live version is verifiable
+const BUILD='2026-08-03m';   // shown in the status bar so the live version is verifiable
 const LS  = 'moonshot.tracker.v3';
 const LSU = 'moonshot.ui.v1';
-let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null};
+const LSC = 'moonshot.tracker.v3.cloud';   // mirror of the last cloud copy that loaded cleanly
+const LSS = 'moonshot.tracker.v3.snaps';   // rolling recovery snapshots
+/* cloud.locked: true when this session is running on a fallback copy (local draft
+   or the built-in seed) because the cloud read failed. While locked we refuse to
+   push, so a fallback can never overwrite the real shared row. */
+let DB=null, PUB=null, dirty=false, cloud={on:true, state:'off', at:null, locked:false, origin:null};
 let UI={ view:'milestones', outlet:null, calMode:'month', calDate:null,
          outlets:null, cpEdit:false };
 
@@ -621,6 +626,27 @@ function saveLocal(){
   catch(e){}
 }
 function readLocal(){ try{const r=localStorage.getItem(LS);return r?JSON.parse(r):null;}catch(e){return null;} }
+/* A verbatim copy of the last cloud read that succeeded. This is the recovery net:
+   even if the working draft gets clobbered, this still holds real data. */
+function saveCloudMirror(data){
+  try{ localStorage.setItem(LSC,JSON.stringify({savedAt:new Date().toISOString(),data})); }catch(e){}
+}
+function readCloudMirror(){ try{const r=localStorage.getItem(LSC);return r?JSON.parse(r):null;}catch(e){return null;} }
+/** Rolling snapshots so a bad overwrite is always recoverable from Setup. */
+function snapshot(label,data){
+  try{
+    const list=JSON.parse(localStorage.getItem(LSS)||'[]');
+    list.unshift({at:new Date().toISOString(),label,
+      outlets:(data.outlets||[]).length,
+      tasks:(data.outlets||[]).reduce((a,o)=>a+(o.tasks||[]).length,0),
+      cats:(data.categories||[]).length,
+      days:(data.holidays||[]).length,
+      data});
+    // three is about what localStorage will take alongside the draft and the mirror
+    localStorage.setItem(LSS,JSON.stringify(list.slice(0,3)));
+  }catch(e){ try{localStorage.removeItem(LSS);}catch(e2){} }
+}
+function readSnaps(){ try{return JSON.parse(localStorage.getItem(LSS)||'[]');}catch(e){return [];} }
 /* Every edit autosaves: locally at once, to the cloud after a short pause. */
 let autoT=null;
 function markDirty(){
@@ -664,10 +690,41 @@ async function sbSave(){
   return true;
 }
 async function pushCloud(){
+  /* The guard that matters: if this session never managed to read the cloud, we are
+     holding a local draft or the built-in seed. Writing that to id=1 would replace
+     the real shared row with a stale or default copy — exactly how a day's work
+     disappears. Refuse, and make the user publish deliberately instead. */
+  if(cloud.locked){ cloud.state='blocked'; renderSync(); return; }
   cloud.state='saving'; renderSync();
-  try{ await sbSave(); cloud.state='ok'; cloud.at=new Date(); dirty=false; }
+  try{ await sbSave(); cloud.state='ok'; cloud.at=new Date(); dirty=false; saveCloudMirror(DB); }
   catch(e){ cloud.state='err'; }
   renderSync();
+}
+/** Retry the cloud read; on success adopt the cloud copy and unlock saving. */
+async function reconnectCloud(){
+  cloud.state='saving'; renderSync();
+  try{
+    const row=await sbLoad();
+    if(row&&row.data&&row.data.outlets){
+      DB=row.data; normalise(); saveCloudMirror(DB); snapshot('cloud',DB);
+      cloud.locked=false; cloud.origin='cloud'; cloud.state='ok';
+      cloud.at=row.updated_at?new Date(row.updated_at):new Date();
+      dirty=false; UI.outlets=new Set(DB.outlets.map(o=>o.id));
+      if(!DB.outlets.some(o=>o.id===UI.outlet))UI.outlet=DB.outlets.length?DB.outlets[0].id:null;
+      toast('Loaded the cloud copy'); render(); return;
+    }
+    cloud.state='empty'; cloud.locked=false; cloud.origin='cloud';
+  }catch(e){ cloud.state='err'; }
+  render();
+}
+/** Deliberately overwrite the shared row with what is on screen. */
+async function publishCloud(){
+  const n=DB.outlets.length, t=DB.outlets.reduce((a,o)=>a+o.tasks.length,0);
+  if(!confirm(`Replace the shared cloud copy with what is on this device?\n\n${n} outlets · ${t} tasks · ${DB.categories.length} categories · ${DB.holidays.length} special days\n\nThe copy currently in the cloud will be overwritten and cannot be undone.`))return;
+  cloud.locked=false;
+  dirty=true;
+  await pushCloud();
+  render();
 }
 
 /* ---------- boot ---------- */
@@ -680,16 +737,33 @@ async function boot(){
 
   cloud.on=true;
   let loaded=false;
-  try{
-    const row=await sbLoad();
-    if(row&&row.data&&row.data.outlets){
-      DB=row.data; cloud.state='ok'; cloud.at=row.updated_at?new Date(row.updated_at):null; loaded=true;
-    }else{ cloud.state='empty'; }
-  }catch(e){ cloud.state='err'; }
-  if(!loaded){
+  /* Retry before giving up. A single transient failure used to be enough to drop
+     the session onto the built-in seed. */
+  for(let attempt=0; attempt<3 && !loaded; attempt++){
+    if(attempt) await new Promise(r=>setTimeout(r, 600*attempt));
+    try{
+      const row=await sbLoad();
+      if(row&&row.data&&row.data.outlets){
+        DB=row.data; cloud.state='ok'; cloud.origin='cloud';
+        cloud.at=row.updated_at?new Date(row.updated_at):null; loaded=true;
+        saveCloudMirror(DB); snapshot('cloud',DB);
+      }else{ cloud.state='empty'; cloud.origin='cloud'; break; }   // genuinely empty, not a failure
+    }catch(e){ cloud.state='err'; }
+  }
+  if(!loaded && cloud.state!=='empty'){
+    /* Fall back in order of how much real work each copy is likely to hold.
+       The cloud mirror outranks the working draft, and the seed is the last
+       resort. Whichever we land on, cloud saving stays locked so this copy
+       cannot overwrite the shared row on its own. */
+    const mirror=readCloudMirror(), local=readLocal();
+    if(mirror&&mirror.data&&mirror.data.outlets){ DB=mirror.data; cloud.origin='mirror'; }
+    else if(local&&local.data&&local.data.outlets){ DB=local.data; cloud.origin='local'; }
+    else { DB=JSON.parse(JSON.stringify(PUB)); cloud.origin='seed'; }
+    cloud.locked=true;
+  }else if(cloud.state==='empty'){
     const local=readLocal();
-    if(local&&local.data&&local.data.outlets) DB=local.data;
-    else DB=JSON.parse(JSON.stringify(PUB));
+    if(local&&local.data&&local.data.outlets){ DB=local.data; cloud.origin='local'; }
+    else { DB=JSON.parse(JSON.stringify(PUB)); cloud.origin='seed'; }
   }
   normalise();
   UI.outlet=DB.outlets.length?DB.outlets[0].id:null;
@@ -775,6 +849,12 @@ function renderSync(){
   }else if(cloud.state==='empty'){
     html=`<span class="dot2 a"></span>Cloud is empty — your first change will publish automatically <span style="color:var(--line-2)">|</span> ${n} outlets · ${t} tasks
       <span class="spacer"></span><span style="color:var(--ink-3);font-size:11px">build ${BUILD}</span>`;
+  }else if(cloud.locked){
+    const src={mirror:'the last cloud copy saved on this device',local:'this device’s draft',seed:'the built-in starter copy'}[cloud.origin]||'a local copy';
+    cls+=' warn';
+    html=`<span class="dot2 r"></span><b>Cloud unreachable — showing ${src}</b> (${n} outlets · ${t} tasks).
+      Saving to the cloud is paused so this copy can’t overwrite the shared data.
+      <button class="btn sm" id="syncRetry">Reconnect</button>`;
   }else{
     cls+=' dirty';
     html=`<span class="dot2 r"></span>Offline — changes are kept on this device
@@ -785,8 +865,10 @@ function renderSync(){
      except an offline state — that means changes are sitting unsaved on the device
      and is worth surfacing wherever you happen to be. */
   if(slot)slot.innerHTML=markup;
-  if(bar)bar.innerHTML=(!slot&&offline)?markup:'';
-  document.getElementById('syncRetry')?.addEventListener('click',()=>{dirty=true;flushSave();});
+  if(bar)bar.innerHTML=(!slot&&(offline||cloud.locked))?markup:'';
+  /* Retry re-READS the cloud. It used to set dirty and push, which meant pressing
+     it while holding a fallback copy was itself a way to overwrite the shared row. */
+  document.getElementById('syncRetry')?.addEventListener('click',reconnectCloud);
 }
 function saveUI(){
   try{ localStorage.setItem(LSU,JSON.stringify({
@@ -1496,6 +1578,23 @@ function viewManage(){
       <div class="ometa">${o.tasks.length} tasks · ${fmt(s)} – ${fmt(e)}${o.launch?' · launch '+fmt(o.launch):''}</div>
     </div>`;}).join('');
 
+  /* Recovery points: the rolling snapshots, plus whatever this device still holds
+     in its own draft and its mirror of the last good cloud read. Those two are the
+     ones that matter after a bad overwrite — they predate it. */
+  const stat=d=>({o:(d.outlets||[]).length,t:(d.outlets||[]).reduce((a,o)=>a+(o.tasks||[]).length,0),
+                  c:(d.categories||[]).length,h:(d.holidays||[]).length});
+  const recPts=[];
+  const _mir=readCloudMirror(), _loc=readLocal();
+  if(_mir&&_mir.data&&_mir.data.outlets)recPts.push({key:'mirror',at:_mir.savedAt,label:'Last cloud copy seen on this device',data:_mir.data});
+  if(_loc&&_loc.data&&_loc.data.outlets)recPts.push({key:'local',at:_loc.savedAt,label:'This device’s own draft',data:_loc.data});
+  readSnaps().forEach((s,i)=>recPts.push({key:'snap'+i,at:s.at,label:'Snapshot',data:s.data}));
+  const snapRows=recPts.map((p,i)=>{const s=stat(p.data);return `<tr>
+      <td style="white-space:nowrap"><b>${p.label}</b><div class="hint">${p.at?new Date(p.at).toLocaleString():'—'}</div></td>
+      <td class="hint">${s.o} outlets · ${s.t} tasks · ${s.c} categories · ${s.h} special days</td>
+      <td style="text-align:right"><button class="btn sm" data-snap="${i}">Restore</button></td>
+    </tr>`;}).join('');
+  window.__recPts=recPts;
+
   return `
   <div class="card">
     <div class="card-h"><h2>Data</h2></div>
@@ -1505,8 +1604,13 @@ function viewManage(){
         <button class="btn" id="bkDown">Download backup</button>
         <button class="btn" id="bkXlsx">Export critical paths (Excel)</button>
         <button class="btn" id="bkUp">Restore from a backup file</button>
+        <button class="btn" id="bkPublish" title="Overwrite the shared cloud copy with what is on this device">Publish to cloud</button>
       </div>
       <div id="syncSlot"></div>
+      ${snapRows?`<div>
+        <div class="hint" style="margin-bottom:6px">Recovery points saved on this device — restore one if data looks wrong.</div>
+        <table class="tbl"><tbody>${snapRows}</tbody></table>
+      </div>`:''}
     </div>
   </div>
 
@@ -2301,6 +2405,16 @@ function wire(){
   /* ---- persistent chrome ---- */
   on('btnExport',exportMenu);
   on('btnImport',()=>$('fileXl').click());
+  on('bkPublish',publishCloud);
+  document.querySelectorAll('[data-snap]').forEach(b=>b.onclick=()=>{
+    const p=(window.__recPts||[])[+b.dataset.snap]; if(!p)return;
+    const d=p.data, o=(d.outlets||[]).length, t=(d.outlets||[]).reduce((a,x)=>a+(x.tasks||[]).length,0);
+    if(!confirm(`Restore "${p.label}"${p.at?' from '+new Date(p.at).toLocaleString():''}?\n\n${o} outlets · ${t} tasks · ${(d.categories||[]).length} categories · ${(d.holidays||[]).length} special days\n\nThis replaces what is on screen. Nothing goes to the cloud until you press Publish to cloud.`))return;
+    DB=JSON.parse(JSON.stringify(d)); normalise();
+    UI.outlets=new Set(DB.outlets.map(o2=>o2.id));
+    if(!DB.outlets.some(o2=>o2.id===UI.outlet))UI.outlet=DB.outlets.length?DB.outlets[0].id:null;
+    toast('Restored — check it, then press Publish to cloud'); render();
+  });
   const fx=$('fileXl');
   if(fx&&!fx._wired){fx._wired=true;fx.onchange=()=>{if(fx.files[0])handleXlsx(fx.files[0]);fx.value='';};}
   const fj=$('fileJs');
